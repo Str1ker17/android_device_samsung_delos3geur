@@ -1,0 +1,230 @@
+# Copyright (c) 2009-2012, Code Aurora Forum. All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#     * Redistributions of source code must retain the above copyright
+#       notice, this list of conditions and the following disclaimer.
+#     * Redistributions in binary form must reproduce the above copyright
+#       notice, this list of conditions and the following disclaimer in the
+#       documentation and/or other materials provided with the distribution.
+#     * Neither the name of Code Aurora nor
+#       the names of its contributors may be used to endorse or promote
+#       products derived from this software without specific prior written
+#       permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NON-INFRINGEMENT ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+# CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+# EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+
+import init.qcom.usb.rc
+import init.target.rc
+
+on init
+    # Set permissions for persist partition
+    mkdir /persist 0771 system system
+
+on early-boot
+    # set RLIMIT_MEMLOCK to 64MB
+    setrlimit 8 67108864 67108864
+
+on early-init
+    # for backwards compatibility
+    export EXTERNAL_STORAGE /storage/sdcard0
+    mkdir /storage 0550 system sdcard_r
+    mkdir /storage/sdcard0 0000 system system
+    symlink /storage/sdcard0 /sdcard
+    symlink /storage/sdcard0 /mnt/sdcard
+# map "real" external storages paths also in same way. backwards compatibility.
+    symlink /storage/extSdCard /mnt/extSdCard
+
+    export SECONDARY_STORAGE /storage/extSdCard
+    mkdir /storage/extSdCard 0000 system system
+
+on boot
+    #port-bridge
+    chmod 0660 /dev/smd0
+    chown system system /dev/smd0
+
+    chmod 0444 /sys/devices/platform/msm_hsusb/gadget/usb_state
+
+    # setup permissions for fb1 related nodes
+    chown system graphics /sys/class/graphics/fb1/hpd
+    chmod 0664 /sys/devices/virtual/graphics/fb1/hpd
+    chmod 0664 /sys/devices/virtual/graphics/fb1/video_mode
+    chmod 0664 /sys/devices/virtual/graphics/fb1/format_3d
+
+    # Change owner and group for media server and surface flinger
+    chown system system /sys/devices/virtual/graphics/fb1/format_3d
+
+    #For bridgemgr daemon to inform the USB driver of the correct transport
+    chown radio radio /sys/class/android_usb/f_rmnet_smd_sdio/transport
+
+    #To allow interfaces to get v6 address when tethering is enabled
+    write /proc/sys/net/ipv6/conf/rmnet0/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet1/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet2/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet3/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet4/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet5/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet6/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet7/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet_sdio0/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet_sdio1/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet_sdio2/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet_sdio3/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet_sdio4/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet_sdio5/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet_sdio6/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet_sdio7/accept_ra 2
+
+    # To prevent out of order acknowledgements from making
+    # connection tracking to treat them as not belonging to
+    # the connection they belong to.
+    # Otherwise, a weird issue happens in which some long
+    # connections on high-throughput links get dropped when
+    # an ack packet comes out of order
+    write /proc/sys/net/netfilter/nf_conntrack_tcp_be_liberal 1
+
+# Permissions for DVFS
+    chown radio system /sys/power/cpufreq_table
+    chown radio system /sys/power/cpufreq_max_limit
+    chown radio system /sys/power/cpufreq_min_limit
+    chown radio system /sys/power/cpufreq_thermal_limit
+    chmod 0660 /sys/power/cpufreq_table
+    chmod 0660 /sys/power/cpufreq_max_limit
+    chmod 0660 /sys/power/cpufreq_min_limit
+    chmod 0660 /sys/power/cpufreq_thermal_limit
+
+# import cne init file
+on post-fs
+# TODO
+    export_rc /persist/init.cne.rc
+    start qcom-post-fs
+
+# msm specific files that need to be created on /data
+on post-fs-data
+    # we will remap this as /mnt/sdcard with the sdcard fuse tool
+    mkdir /data/media 0775 media_rw media_rw
+    chown media_rw media_rw /data/media
+
+    # Create the directories used by the Wireless subsystem
+    mkdir /data/misc/wifi 0770 wifi system
+    mkdir /data/misc/wifi/sockets 0770 wifi wifi
+    mkdir /data/misc/dhcp 0775 dhcp dhcp
+    chown dhcp dhcp /data/misc/dhcp
+
+    # Mounting of persist is moved to 'on emmc-fs' and 'on fs' sections
+    # We chown/chmod /persist again so because mount is run as root + defaults
+    chown system system /persist
+    chmod 0771 /persist
+    chmod 0664 /sys/devices/platform/msm_sdcc.1/polling
+    chmod 0664 /sys/devices/platform/msm_sdcc.2/polling
+    chmod 0664 /sys/devices/platform/msm_sdcc.3/polling
+    chmod 0664 /sys/devices/platform/msm_sdcc.4/polling
+
+    # Chown polling nodes as needed from UI running on system server
+    chown system system /sys/devices/platform/msm_sdcc.1/polling
+    chown system system /sys/devices/platform/msm_sdcc.2/polling
+    chown system system /sys/devices/platform/msm_sdcc.3/polling
+    chown system system /sys/devices/platform/msm_sdcc.4/polling
+
+    #Create the symlink to qcn wpa_supplicant folder for ar6000 wpa_supplicant
+    mkdir /data/system 0775 system system
+
+    #disable wiper by KHL
+    #Create directories for wiper services
+    mkdir /data/wpstiles/ 0755 shell
+
+    #Create directory from IMS services
+    mkdir /data/shared 0755
+    chown system system /data/shared
+
+    #Create directory for FOTA
+    mkdir /data/fota 0771
+    chown system system /data/fota
+
+    #Provide the access to hostapd.conf only to root and group
+    chmod 0660 /data/hostapd/hostapd.conf
+
+    # Create /data/time folder for time-services
+    mkdir /data/time/ 0700 system system
+
+    setprop vold.post_fs_data_done 1
+
+on property:init.svc.surfaceflinger=stopped
+    stop ppd
+    stop hdmid
+
+service qcom-c_core-sh /system/bin/sh /init.qcom.class_core.sh
+    class core
+    user root
+    oneshot
+
+service qcom-c_main-sh /system/bin/sh /init.qcom.class_main.sh
+    class main
+    user root
+    oneshot
+
+on property:vold.decrypt=trigger_restart_framework
+    start qcom-c_main-sh
+
+service rmt_storage /system/bin/rmt_storage
+    class core
+    user root
+    disabled
+
+on property:ro.boot.emmc=true
+    start rmt_storage
+
+service fm_dl /system/bin/sh /system/etc/init.qcom.fm.sh
+    class late_start
+    user root
+    group system qcom_oncrpc
+    disabled
+    oneshot
+
+service qcom-post-fs /system/bin/sh /system/etc/init.qcom.post_fs.sh
+    class core
+    user root
+    disabled
+    oneshot
+
+service qcom-sh /system/bin/sh /init.qcom.sh
+    class late_start
+    user root
+    oneshot
+
+service qcom-post-boot /system/bin/sh /system/etc/init.qcom.post_boot.sh
+    class late_start
+    user root
+    disabled
+    oneshot
+
+on property:sys.boot_completed=1
+    start qcom-post-boot
+
+service sdcard /system/bin/sdcard /data/media 1023 1023
+    class late_start
+
+# This will make sure that sdcard service starts as late_start.
+on nonencrypted
+    setprop ro.fuse_sdcard ${persist.fuse_sdcard}
+
+on property:vold.decrypt=trigger_restart_framework
+    setprop ro.fuse_sdcard ${persist.fuse_sdcard}
+
+# Restart adbd so it can run as root
+on property:service.adb.root=1
+    write /sys/class/android_usb/android0/enable 0
+    restart adbd
+    write /sys/class/android_usb/android0/enable 1
+

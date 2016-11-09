@@ -1,0 +1,80 @@
+#
+# system.prop for delos3geur
+#
+
+# we wanna know what's happening
+persist.sys.usb.config=ptp,adb
+# obsolete
+#persist.service.adb.enable=1
+#persist.service.debuggable=1
+# eng mode
+persist.sys.root_access=3
+
+persist.fuse_sdcard=true
+
+# this is required for graphics
+# I like 220 density as in 4.4 by weritos. So let it be.
+ro.sf.lcd_density=220
+ro.opengles.version=131072
+# from init scripts; graphics
+debug.composition.8x25.type=dyn
+
+# attempt to fix /system/bin/sh
+# is this overlayed with default.prop?
+#ro.secure=0
+#ro.debuggable=1
+#ro.adb.secure=0
+cm.updater.uri=http://cyanogen.ultibot.ru/api
+
+# RIL
+rild.libpath=/system/lib/libril-qc-qmi-1.so
+rild.libargs=-d /dev/smd0
+persist.dsds.enabled=true
+persist.radio.multisim.config=dsds
+persist.multisim.config=dsds
+ro.multi.rild=true
+
+ril.subscription.types=NV,RUIM
+persist.rild.nitz_plmn=
+persist.rild.nitz_long_ons_0=
+persist.rild.nitz_long_ons_1=
+persist.rild.nitz_long_ons_2=
+persist.rild.nitz_long_ons_3=
+persist.rild.nitz_short_ons_0=
+persist.rild.nitz_short_ons_1=
+persist.rild.nitz_short_ons_2=
+persist.rild.nitz_short_ons_3=
+
+# shutdown these tweaks temporarily
+#ro.telephony.ril_class=SamsungCDMAv6RIL
+#ro.telephony.ril.v3=skippinpukcount,qcomdsds
+#ro.telephony.ril.config=skippinpukcount,qcomdsds
+# NETWORK_MODE: 3 = GSM/WCDMA (auto mode, according to PRL)
+#ro.telephony.default_network=3
+# CDMA subscription: 0 = RUIM, 1 = NV
+#ro.telephony.default_cdma_sub=0
+#ro.telephony.call_ring.multiple=false
+#telephony.lteOnCdmaDevice=0
+#ro.cdma.factory=china
+#ro.cdma.subscribe_on_ruim_ready=true
+#ro.use_data_netmgrd=true
+#persist.data_netmgrd_nint=16
+#persist.data.ds_fmc_app.mode=0
+#persist.radio.apm_sim_not_pwdn=1
+#persist.radio.mode_pref_nv10=1
+# System prop for sending transmit power request to RIL during WiFi hotspot on/off
+#ro.ril.transmitpower=true
+
+# WiFi tweak
+# this is already set in init.rc
+#wifi.interface=wlan0
+wifi.supplicant_scan_interval=30
+
+# Dalvik
+dalvik.vm.heapsize=24m
+dalvik.vm.heapstartsize=5m
+dalvik.vm.heapgrowthlimit=48m
+dalvik.vm.heapsize=128m
+dalvik.vm.heaputilization=0.25
+dalvik.vm.heapidealfree=8388608
+dalvik.vm.heapconcurrentstart=2097152
