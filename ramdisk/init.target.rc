@@ -27,18 +27,71 @@
 #
 #
 on early-boot
-    #start comp-set
-    #start version-set
-	symlink /system/bin/mksh /system/bin/sh
-	start adbd
+    start comp-set
+    start version-set
+
 
 on post-fs
     exec /system/bin/sh /system/etc/init.qcom.thermald_conf.sh
 
-on property:sys.radio.shutdown=true
-   exec /system/bin/sh /system/etc/init.qcom.efs.sync.sh
+service ril-qmi /system/bin/sh /init.qcom.ril.path.sh
+    class main
+    user root
+    oneshot
+
+service comp-set /system/bin/sh /system/etc/init.qcom.composition_type.sh
+    class late_start
+    user root
+    critical
+    disabled
+    oneshot
+
+service version-set /system/bin/sh /system/etc/init.target.8x25.sh
+    class late_start
+    user root
+    critical
+    disabled
+    oneshot
+
+service wlan_tool /system/bin/wlan_tool
+    class late_start
+    user root
+    group wifi system net_admin inet shell
+    oneshot
+
+on boot
+   start qcamerasvr
+   start gpu_dcvsd
+
+#start camera server as daemon
+service qcamerasvr /system/bin/mm-qcamera-daemon
+        class late_start
+        user camera
+        group camera system inet audio
+
+service thermald /system/bin/thermald
+   class late_start
    user root
    group root
+   disabled
+
+service mpdecision /system/bin/logwrapper /system/bin/mpdecision --no_sleep --avg_comp
+    class late_start
+	user root
+	disabled
+
+on property:sys.radio.shutdown=true
+   exec - root root -- /system/bin/sh /system/etc/init.qcom.efs.sync.sh
+
+service gpu_dcvsd /system/bin/logwrapper /system/bin/gpu_dcvsd
+    class late_start
+    user root
+    oneshot
+
+service qosmgrd /system/bin/qosmgr /system/etc/qosmgr_rules.xml
+    user system
+    group system
+    disabled
 
 on fs
     mount_all fstab.delos3g
@@ -61,6 +114,19 @@ on fs
     chown system radio /efs
     chmod 0771 /efs
 
+#service griffon /system/xbin/gps-start.sh
+#   class main
+#   socket gpsd39 dgram 0660 gps system inet
+#   socket gpsd16 dgram 0660 gps system inet
+#   user gps
+#   group gps system qcom_diag diag log inet
+
+on boot
+   chown gps system /sys/class/gpio/gpio7/value
+   chown gps system /sys/class/gpio/gpio7/direction
+   chmod 0644 /sys/class/gpio/gpio7/value
+   chmod 0644 /sys/class/gpio/gpio7/direction
+
 # mount mtd partitions
     # Mount /system rw first to give the filesystem a chance to save a checkpoint
     mount yaffs2 mtd@system /system
@@ -68,3 +134,5 @@ on fs
     mount yaffs2 mtd@userdata /data nosuid nodev
     mount yaffs2 mtd@persist /persist nosuid nodev
     mount yaffs2 mtd@cache /cache nosuid nodev
+    mount yaffs2 mtd@persist /persist nosuid nodev
+

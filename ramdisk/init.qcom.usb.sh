@@ -107,7 +107,7 @@ case "$usb_config" in
                     ;;
                 esac
             ;;
-            "msm7627a")
+            "msm7x27a")
 		case "$dserial" in
 			"1")
 				setprop persist.sys.usb.config mtp,adb
@@ -142,7 +142,7 @@ target=`getprop ro.product.device`
 cdromname="/system/etc/cdrom_install.iso"
 cdromenable=`getprop persist.service.cdrom.enable`
 case "$target" in
-        "msm7627a" | "msm8625")
+        "msm7x27a" | "msm8625")
                 case "$cdromenable" in
                         0)
                                 echo "" > /sys/class/android_usb/android0/f_mass_storage/lun0/file

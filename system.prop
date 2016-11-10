@@ -3,7 +3,7 @@
 #
 
 # we wanna know what's happening
-persist.sys.usb.config=ptp,adb
+persist.sys.usb.config=mtp,adb
 # obsolete
 #persist.service.adb.enable=1
 #persist.service.debuggable=1
@@ -50,7 +50,7 @@ persist.rild.nitz_short_ons_3=
 #ro.telephony.ril.v3=skippinpukcount,qcomdsds
 #ro.telephony.ril.config=skippinpukcount,qcomdsds
 # NETWORK_MODE: 3 = GSM/WCDMA (auto mode, according to PRL)
-#ro.telephony.default_network=3
+ro.telephony.default_network=3
 # CDMA subscription: 0 = RUIM, 1 = NV
 #ro.telephony.default_cdma_sub=0
 #ro.telephony.call_ring.multiple=false
