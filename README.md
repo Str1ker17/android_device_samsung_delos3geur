@@ -1,6 +1,7 @@
 # Samsung Galaxy Win (Grand Quatto) GT-I8552 device tree
 # CyanogenMod 10 by Str1ker
 
+Device is based on msm7x27a (msm7627a exactly) chip and msm8625 board.
 If you want to build, disable hardware/ril directory first.
 
 What's working:
