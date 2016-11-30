@@ -879,7 +879,8 @@ service racoon /system/bin/logwrapper /system/bin/racoon
     disabled
     oneshot
 
-service mtpd /system/bin/logwrapper /system/bin/mtpd
+# MTPd could not be wrapped into logwrapper?
+service mtpd /system/bin/mtpd
     class main
     socket mtpd stream 600 system system
     user vpn

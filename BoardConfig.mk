@@ -97,10 +97,11 @@ WIFI_DRIVER_MODULE_ARG := "suspend_mode=3 wow_mode=2 ath6kl_p2p=1 recovery_enabl
 WIFI_DRIVER_FW_PATH_PARAM := "/data/misc/wifi/fwpath"
 
 # GPS by weritos
-QCOM_GPS_PATH := hardware/qcom/gps
+#QCOM_GPS_PATH := hardware/qcom/gps
+#TARGET_PROVIDES_GPS_LOC_API := true
 BOARD_USES_QCOM_LIBRPC := true
 BOARD_USES_QCOM_GPS := true
-BOARD_VENDOR_QCOM_GPS_LOC_API_AMSS_VERSION := 50000
+BOARD_VENDOR_QCOM_GPS_LOC_API_AMSS_VERSION := 50001
 BOARD_VENDOR_QCOM_GPS_LOC_API_HARDWARE := $(TARGET_BOARD_PLATFORM) 
 
 # partitions
@@ -125,6 +126,9 @@ BOARD_EGL_CFG := device/samsung/delos3geur/config/egl.cfg
 #TARGET_USE_CUSTOM_LUN_FILE_PATH := /sys/devices/platform/msm_hsusb/gadget/lun0/file
 
 TARGET_PREBUILT_KERNEL := device/samsung/delos3geur/kernel
+# Inline kernel building
+#TARGET_KERNEL_SOURCE := kernel/samsung/delos3geur
+#TARGET_KERNEL_CONFIG := cm10_delos3geur_defconfig
 
 # Use this flag if the board has a ext4 partition larger than 2gb
 BOARD_HAS_LARGE_FILESYSTEM := true

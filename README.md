@@ -8,23 +8,26 @@ What's working:
 - It boots, so graphics
 - ADB
 - Internal storage
-- External storage (need testing for inject/eject)
+- External storage
 - Sensors (proprietary)
 - Lights HAL
-- Audio: speakerphone
-- Audio: microphone
 - CPU Hotplug (proprietary)
 - Wi-Fi
 
-What's not working:
+
+What's under development:
+- Audio: speakerphone
+- Audio: microphone
+- Audio: headset
+- MTP/PTP
 - Wi-Fi Direct
-- RIL
 - GPS (HAL build OK, but LocationProvider causes permanent wakelock, so it's turned off)
+
+What's not working:
+- RIL
 - Power Profile
 - Power HAL
 - Flashlight
-- Audio: headset
-- MTP/PTP
 - Tethering (Wi-Fi nor USB)
 - Hardware codecs
 - Camera
@@ -33,5 +36,5 @@ What's not working:
 Known issues:
 - Audio: speakerphone is too quiet
 - Audio: microphone is too quiet too
-- WebView causes some apps (like ForPDA) to crash
-- CPU Governors could not be changed through builtin settings due to file chmods
+- Something causes some apps (like ForPDA) to crash
+- CPU Governors could not be changed through builtin settings due to MPDecision proprietary service

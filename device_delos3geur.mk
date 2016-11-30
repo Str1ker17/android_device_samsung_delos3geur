@@ -1,7 +1,7 @@
 $(call inherit-product, $(SRC_TARGET_DIR)/product/languages_full.mk)
 
 # The gps config appropriate for this device
-#$(call inherit-product, device/common/gps/gps_us_supl.mk)
+$(call inherit-product, device/common/gps/gps_us_supl.mk)
 
 $(call inherit-product-if-exists, vendor/samsung/delos3geur/delos3geur-vendor.mk)
 
@@ -25,13 +25,12 @@ PRODUCT_COPY_FILES += \
 PRODUCT_COPY_FILES += frameworks/native/data/etc/handheld_core_hardware.xml:system/etc/permissions/handheld_core_hardware.xml
 PRODUCT_COPY_FILES += frameworks/native/data/etc/android.hardware.touchscreen.multitouch.jazzhand.xml:system/etc/permissions/android.hardware.touchscreen.multitouch.jazzhand.xml
 PRODUCT_COPY_FILES += frameworks/native/data/etc/android.hardware.wifi.xml:system/etc/permissions/android.hardware.wifi.xml
-
+#PRODUCT_COPY_FILES += frameworks/native/data/etc/android.hardware.wifi.direct.xml:system/etc/permissions/android.hardware.wifi.direct.xml
+#PRODUCT_COPY_FILES += frameworks/native/data/etc/android.hardware.location.gps.xml:system/etc/permissions/android.hardware.location.gps.xml
 PRODUCT_COPY_FILES += frameworks/native/data/etc/android.hardware.camera.flash-autofocus.xml:system/etc/permissions/android.hardware.camera.flash-autofocus.xml
 PRODUCT_COPY_FILES += frameworks/native/data/etc/android.hardware.camera.front.xml:system/etc/permissions/android.hardware.camera.front.xml
 PRODUCT_COPY_FILES += frameworks/native/data/etc/android.hardware.telephony.gsm.xml:system/etc/permissions/android.hardware.telephony.gsm.xml
 PRODUCT_COPY_FILES += frameworks/native/data/etc/android.hardware.telephony.cdma.xml:system/etc/permissions/android.hardware.telephony.cdma.xml
-#PRODUCT_COPY_FILES += frameworks/native/data/etc/android.hardware.location.gps.xml:system/etc/permissions/android.hardware.location.gps.xml
-#PRODUCT_COPY_FILES += frameworks/native/data/etc/android.hardware.wifi.direct.xml:system/etc/permissions/android.hardware.wifi.direct.xml
 PRODUCT_COPY_FILES += frameworks/native/data/etc/android.software.sip.voip.xml:system/etc/permissions/android.software.sip.voip.xml
 PRODUCT_COPY_FILES += frameworks/native/data/etc/android.hardware.sensor.proximity.xml:system/etc/permissions/android.hardware.sensor.proximity.xml
 PRODUCT_COPY_FILES += frameworks/native/data/etc/android.hardware.sensor.gyroscope.xml:system/etc/permissions/android.hardware.sensor.gyroscope.xml
@@ -53,7 +52,7 @@ PRODUCT_PACKAGES += libOmxCore
 #PRODUCT_PACKAGES += libqdutils
 #PRODUCT_PACKAGES += librs_jni
 PRODUCT_PACKAGES += libcnefeatureconfig
-PRODUCT_PACKAGES += libnl_2
+#PRODUCT_PACKAGES += libnl_2
 #PRODUCT_PACKAGES += libstagefrighthw
 #PRODUCT_PACKAGES += libdashplayer
 #PRODUCT_PACKAGES += libI420colorconvert 
@@ -62,30 +61,26 @@ PRODUCT_PACKAGES += libnl_2
 # audio.primary, audio_policy: hardware/qcom/audio || device/samsung/delos3geur/audio
 PRODUCT_PACKAGES += audio.primary.msm7x27a
 PRODUCT_PACKAGES += audio_policy.msm7x27a
-PRODUCT_PACKAGES += audio.a2dp.default
+#PRODUCT_PACKAGES += audio.a2dp.default
 PRODUCT_PACKAGES += audio.usb.default
 PRODUCT_PACKAGES += libaudioutils
 #PRODUCT_PACKAGES += libaudiohw_legacy
 
 # GPS (disabled)
-#PRODUCT_PACKAGES += gps.msm7x27a
-# no rule to make target
-#PRODUCT_PACKAGES += libgps.utils
-# no rule to make target
-#PRODUCT_PACKAGES += libloc_adapter
-# no rule to make target
-#PRODUCT_PACKAGES += libloc_eng
-# cm11
-#PRODUCT_PACKAGES += libloc_api-rpc-qc
+PRODUCT_PACKAGES += gps.msm7x27a
+PRODUCT_PACKAGES += libgps.utils
 PRODUCT_PACKAGES += libloc_api-rpc
+PRODUCT_PACKAGES += libloc_api_v02
 
 # Misc
-#PRODUCT_PACKAGES += power.msm7x27a
+#PRODUCT_PACKAGES += libhealthd.msm7x27a
+PRODUCT_PACKAGES += power.msm7x27a
 #PRODUCT_PACKAGES += libnetutils # no need
-PRODUCT_PACKAGES += libnetmgr
+#PRODUCT_PACKAGES += libnetmgr
 
 # Java applications
 PRODUCT_PACKAGES +=	Torch
+PRODUCT_PACKAGES +=	CMUpdater
 	
 # proprietary files
 PRODUCT_COPY_FILES += $(call find-copy-subdir-files,*,$(LOCAL_PATH)/system,system)
@@ -96,13 +91,7 @@ PRODUCT_DEFAULT_PROPERTY_OVERRIDES += ro.adb.secure=0
 PRODUCT_DEFAULT_PROPERTY_OVERRIDES += ro.secure=0
 PRODUCT_DEFAULT_PROPERTY_OVERRIDES += ro.debuggable=1
 
-#include $(call all-makefiles-under, hardware/qcom)
-#$(call inherit-product, hardware/qcom/display/Android.mk)
-#$(call inherit-product, hardware/qcom/media/Android.mk)
-#$(call inherit-product, hardware/qcom/audio/Android.mk)
-#$(call inherit-product, hardware/qcom/gps/loc_api/Android.mk)
-
-TARGET_OTA_ASSERT_DEVICE :=
+TARGET_OTA_ASSERT_DEVICE := delos3geur,i8552,gt-i8552,GT-I8552
 # Actually build
 $(call inherit-product, build/target/product/full.mk)
 
