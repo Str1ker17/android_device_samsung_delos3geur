@@ -48,18 +48,6 @@ PRODUCT_PACKAGES += gralloc.msm7x27a
 PRODUCT_PACKAGES += copybit.msm7x27a
 PRODUCT_PACKAGES += lights.msm7x27a
 PRODUCT_PACKAGES += hwcomposer.msm7x27a
-#PRODUCT_PACKAGES += libgenlock
-#PRODUCT_PACKAGES += libtilerenderer
-#PRODUCT_PACKAGES += memtrack.msm7x27a
-#PRODUCT_PACKAGES += libmm-omxcore
-#PRODUCT_PACKAGES += libOmxCore
-#PRODUCT_PACKAGES += libqdutils
-#PRODUCT_PACKAGES += librs_jni
-#PRODUCT_PACKAGES += libcnefeatureconfig
-#PRODUCT_PACKAGES += libnl_2
-#PRODUCT_PACKAGES += libstagefrighthw
-#PRODUCT_PACKAGES += libdashplayer
-#PRODUCT_PACKAGES += libI420colorconvert 
 	
 # Audio
 # audio.primary, audio_policy: hardware/qcom/audio || device/samsung/delos3geur/audio
@@ -67,8 +55,6 @@ PRODUCT_PACKAGES += audio.primary.msm7x27a
 PRODUCT_PACKAGES += audio_policy.msm7x27a
 #PRODUCT_PACKAGES += audio.a2dp.default
 #PRODUCT_PACKAGES += audio.usb.default
-#PRODUCT_PACKAGES += libaudioutils
-#PRODUCT_PACKAGES += libaudiohw_legacy
 
 # GPS (disabled)
 #PRODUCT_PACKAGES += gps.msm7x27a
@@ -99,6 +85,6 @@ $(call inherit-product, build/target/product/full.mk)
 PRODUCT_BUILD_PROP_OVERRIDES += BUILD_UTC_DATE=0
 PRODUCT_NAME := full_delos3geur
 PRODUCT_DEVICE := delos3geur
-PRODUCT_BRAND := samsung
-PRODUCT_MANUFACTURER := samsung
+PRODUCT_BRAND := Samsung
+PRODUCT_MANUFACTURER := Samsung
 PRODUCT_MODEL := GT-I8552

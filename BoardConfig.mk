@@ -121,7 +121,7 @@ DEVICE_RESOLUTION := 480x800
 
 # tweaking RIL by weritos
 # if true, use libril from device tree or somewhere else, NOT from hardware/ril
-#BOARD_PROVIDES_LIBRIL := true
+BOARD_PROVIDES_LIBRIL := true
 #BOARD_RIL_CLASS := ../../../device/samsung/delos3geur/ril/java_ril
 COMMON_GLOBAL_CFLAGS += -DRIL_SUPPORTS_SEEK
 COMMON_GLOBAL_CFLAGS += -DRIL_VARIANT_LEGACY 

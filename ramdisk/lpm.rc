@@ -18,7 +18,7 @@ sysclktz 0
 loglevel 3
 
 on fs
-    mount_all fstab.msm7627a
+    mount_all fstab.qcom.base
 
 # setup the global environment
     export PATH /sbin:/vendor/bin:/system/sbin:/system/bin:/system/xbin
@@ -138,13 +138,13 @@ on fs
 
 service mpdecision /system/bin/mpdecision --no_sleep --avg_comp
     class late_start
-        user root
-        disabled
-
-service qosmgrd /system/bin/qosmgr /system/etc/qosmgr_rules.xml
-    user system
-    group system
+    user root
     disabled
+
+#service qosmgrd /system/bin/qosmgr /system/etc/qosmgr_rules.xml
+#    user system
+#    group system
+#    disabled
 
 on boot
 	ifup lo
