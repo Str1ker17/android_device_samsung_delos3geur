@@ -17,6 +17,6 @@ $(call inherit-product, device/samsung/delos3geur/device_delos3geur.mk)
 ## Device identifier. This must come after all inclusions
 PRODUCT_DEVICE := delos3geur
 PRODUCT_NAME := cm_delos3geur
-PRODUCT_BRAND := Samsung
+PRODUCT_BRAND := samsung
 PRODUCT_MODEL := GT-I8552
 PRODUCT_MANUFACTURER := samsung

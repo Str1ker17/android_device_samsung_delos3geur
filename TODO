@@ -1,0 +1,5 @@
+offline charging
+E/LPM     (  133): Could not open '/sys/class/power_supply/battery/current_avg'
+
+write own /system/etc/gpu_dcvs.conf to suppress warning
+W/gpu_dcvs(  212): <init_config:257>: failed to open config file, using defaults

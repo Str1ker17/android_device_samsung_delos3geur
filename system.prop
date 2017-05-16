@@ -9,6 +9,8 @@ persist.sys.usb.config=mtp,adb
 #persist.service.debuggable=1
 # eng mode
 persist.sys.root_access=3
+# debug everything
+debug.db.uid=999999
 
 persist.fuse_sdcard=true
 

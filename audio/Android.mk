@@ -1,8 +1,6 @@
-ifeq ($(TARGET_PROVIDES_LIBAUDIO),true)
-ifeq ($(BOARD_USES_QCOM_HARDWARE),true)
-
-AUDIO_HW_ROOT := $(call my-dir)
-include $(AUDIO_HW_ROOT)/msm7627a/Android.mk
-
-endif
+# thanks Grace5921
+ifeq ($(TARGET_QCOM_AUDIO_VARIANT),custom)
+AUDIO_HAL_PATH := $(call my-dir)
+include $(AUDIO_HAL_PATH)/audio_hal/Android.mk
+include $(AUDIO_HAL_PATH)/policy_hal/Android.mk
 endif

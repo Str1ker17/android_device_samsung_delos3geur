@@ -13,7 +13,7 @@ PRODUCT_AAPT_CONFIG := mdpi hdpi
 DEVICE_PACKAGE_OVERLAYS += $(LOCAL_PATH)/overlay
 
 ifeq ($(TARGET_PREBUILT_KERNEL),)
-	LOCAL_KERNEL := $(LOCAL_PATH)/kernel
+	LOCAL_KERNEL := $(LOCAL_PATH)/kernel_mtp
 else
 	LOCAL_KERNEL := $(TARGET_PREBUILT_KERNEL)
 endif
@@ -27,31 +27,35 @@ PRODUCT_COPY_FILES += frameworks/native/data/etc/android.hardware.touchscreen.mu
 PRODUCT_COPY_FILES += frameworks/native/data/etc/android.hardware.wifi.xml:system/etc/permissions/android.hardware.wifi.xml
 #PRODUCT_COPY_FILES += frameworks/native/data/etc/android.hardware.wifi.direct.xml:system/etc/permissions/android.hardware.wifi.direct.xml
 #PRODUCT_COPY_FILES += frameworks/native/data/etc/android.hardware.location.gps.xml:system/etc/permissions/android.hardware.location.gps.xml
-PRODUCT_COPY_FILES += frameworks/native/data/etc/android.hardware.camera.flash-autofocus.xml:system/etc/permissions/android.hardware.camera.flash-autofocus.xml
-PRODUCT_COPY_FILES += frameworks/native/data/etc/android.hardware.camera.front.xml:system/etc/permissions/android.hardware.camera.front.xml
+#PRODUCT_COPY_FILES += frameworks/native/data/etc/android.hardware.camera.flash-autofocus.xml:system/etc/permissions/android.hardware.camera.flash-autofocus.xml
+#PRODUCT_COPY_FILES += frameworks/native/data/etc/android.hardware.camera.front.xml:system/etc/permissions/android.hardware.camera.front.xml
 PRODUCT_COPY_FILES += frameworks/native/data/etc/android.hardware.telephony.gsm.xml:system/etc/permissions/android.hardware.telephony.gsm.xml
 PRODUCT_COPY_FILES += frameworks/native/data/etc/android.hardware.telephony.cdma.xml:system/etc/permissions/android.hardware.telephony.cdma.xml
 PRODUCT_COPY_FILES += frameworks/native/data/etc/android.software.sip.voip.xml:system/etc/permissions/android.software.sip.voip.xml
 PRODUCT_COPY_FILES += frameworks/native/data/etc/android.hardware.sensor.proximity.xml:system/etc/permissions/android.hardware.sensor.proximity.xml
 PRODUCT_COPY_FILES += frameworks/native/data/etc/android.hardware.sensor.gyroscope.xml:system/etc/permissions/android.hardware.sensor.gyroscope.xml
-PRODUCT_COPY_FILES += frameworks/native/data/etc/android.hardware.usb.accessory.xml:system/etc/permissions/android.hardware.usb.accessory.xml
-PRODUCT_COPY_FILES += frameworks/native/data/etc/android.hardware.usb.host.xml:system/etc/permissions/android.hardware.usb.host.xml
+#PRODUCT_COPY_FILES += frameworks/native/data/etc/android.hardware.usb.accessory.xml:system/etc/permissions/android.hardware.usb.accessory.xml
+#PRODUCT_COPY_FILES += frameworks/native/data/etc/android.hardware.usb.host.xml:system/etc/permissions/android.hardware.usb.host.xml
+
+# proprietary files
+PRODUCT_COPY_FILES += $(call find-copy-subdir-files,*,$(LOCAL_PATH)/system,system)
 
 # Display
 # copybit, gralloc, hwcomposer, lights: hardware/qcom/display
 # libmm-omxcore, libOmxCore: hardware/qcom/media
-PRODUCT_PACKAGES += libgenlock
+# build HALs ONLY
 PRODUCT_PACKAGES += gralloc.msm7x27a
 PRODUCT_PACKAGES += copybit.msm7x27a
 PRODUCT_PACKAGES += lights.msm7x27a
-PRODUCT_PACKAGES += libtilerenderer
-PRODUCT_PACKAGES += memtrack.msm7x27a
 PRODUCT_PACKAGES += hwcomposer.msm7x27a
-PRODUCT_PACKAGES += libmm-omxcore
-PRODUCT_PACKAGES += libOmxCore
+#PRODUCT_PACKAGES += libgenlock
+#PRODUCT_PACKAGES += libtilerenderer
+#PRODUCT_PACKAGES += memtrack.msm7x27a
+#PRODUCT_PACKAGES += libmm-omxcore
+#PRODUCT_PACKAGES += libOmxCore
 #PRODUCT_PACKAGES += libqdutils
 #PRODUCT_PACKAGES += librs_jni
-PRODUCT_PACKAGES += libcnefeatureconfig
+#PRODUCT_PACKAGES += libcnefeatureconfig
 #PRODUCT_PACKAGES += libnl_2
 #PRODUCT_PACKAGES += libstagefrighthw
 #PRODUCT_PACKAGES += libdashplayer
@@ -62,15 +66,15 @@ PRODUCT_PACKAGES += libcnefeatureconfig
 PRODUCT_PACKAGES += audio.primary.msm7x27a
 PRODUCT_PACKAGES += audio_policy.msm7x27a
 #PRODUCT_PACKAGES += audio.a2dp.default
-PRODUCT_PACKAGES += audio.usb.default
-PRODUCT_PACKAGES += libaudioutils
+#PRODUCT_PACKAGES += audio.usb.default
+#PRODUCT_PACKAGES += libaudioutils
 #PRODUCT_PACKAGES += libaudiohw_legacy
 
 # GPS (disabled)
-PRODUCT_PACKAGES += gps.msm7x27a
-PRODUCT_PACKAGES += libgps.utils
-PRODUCT_PACKAGES += libloc_api-rpc
-PRODUCT_PACKAGES += libloc_api_v02
+#PRODUCT_PACKAGES += gps.msm7x27a
+#PRODUCT_PACKAGES += libgps.utils
+#PRODUCT_PACKAGES += libloc_api-rpc
+#PRODUCT_PACKAGES += libloc_api_v02
 
 # Misc
 #PRODUCT_PACKAGES += libhealthd.msm7x27a
@@ -82,9 +86,6 @@ PRODUCT_PACKAGES += power.msm7x27a
 PRODUCT_PACKAGES +=	Torch
 PRODUCT_PACKAGES +=	CMUpdater
 	
-# proprietary files
-PRODUCT_COPY_FILES += $(call find-copy-subdir-files,*,$(LOCAL_PATH)/system,system)
-
 # files for boot.img
 PRODUCT_COPY_FILES += $(call find-copy-subdir-files,*,$(LOCAL_PATH)/ramdisk,root)
 PRODUCT_DEFAULT_PROPERTY_OVERRIDES += ro.adb.secure=0
