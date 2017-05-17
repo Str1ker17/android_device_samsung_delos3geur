@@ -1,5 +1,9 @@
-offline charging
+offline charging with stock+cm10 init scripts
 E/LPM     (  133): Could not open '/sys/class/power_supply/battery/current_avg'
 
 write own /system/etc/gpu_dcvs.conf to suppress warning
 W/gpu_dcvs(  212): <init_config:257>: failed to open config file, using defaults
+
+with cm10.1+Grace5921 init scripts
+I/mediaserver(  132): fatal error opening "/sys/power/wake_lock"
+I/mediaserver(  132): fatal error opening "/sys/android_power/acquire_partial_wake_lock"

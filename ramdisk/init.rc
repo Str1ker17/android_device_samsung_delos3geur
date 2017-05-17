@@ -11,7 +11,9 @@ import /init.carrier.rc
 
 on early-init
     # Set init and its forked children's oom_adj.
-    write /proc/1/oom_adj -16
+    write /proc/1/oom_score_adj -16
+    # stock
+    symlink /efs /factory
 
     # Set the security context for the init process.
     # This should occur before anything else (e.g. ueventd) is started.
@@ -34,10 +36,12 @@ on early-init
     chown system system /sys/fs/selinux/commit_pending_bools
 
 on init
+    # stock
+    mkdir /preload 0771 system system
 
 sysclktz 0
 
-loglevel 3
+loglevel 8
 
 # setup the global environment
     export PATH /sbin:/vendor/bin:/system/sbin:/system/bin:/system/xbin
@@ -68,6 +72,7 @@ loglevel 3
     mkdir /data 0771 system system
     mkdir /cache 0771 system cache
     mkdir /config 0500 root root
+    mkdir /efs 0771 system radio
 
     # See storage config details at http://source.android.com/tech/storage/
     mkdir /mnt/shell 0700 shell shell
@@ -192,6 +197,9 @@ on post-fs
     # create the lost+found directories, so as to enforce our permissions
     mkdir /cache/lost+found 0770 root root
 
+# stock
+# For SysScope
+    symlink /dev/block/mmcblk0p14 /dev/block/param
 on post-fs-data
     # We chown/chmod /data again so because mount is run as root + defaults
     chown system system /data
@@ -220,7 +228,15 @@ on post-fs-data
     mkdir /data/misc/adb 02750 system shell
     mkdir /data/misc/audit 02750 audit system
     mkdir /data/misc/bluedroid 0770 bluetooth net_bt_stack
+
+# stock
+    mkdir /data/misc/bluetoothd 0770 bluetooth bluetooth
+
     mkdir /data/misc/bluetooth 0770 system system
+
+# stock
+    mkdir /efs/bluetooth 0775 radio system
+
     mkdir /data/misc/keystore 0700 keystore keystore
     mkdir /data/misc/keychain 0771 system system
     mkdir /data/misc/sms 0770 system radio
@@ -230,6 +246,12 @@ on post-fs-data
     mkdir /data/misc/wifi 0770 wifi wifi
     chmod 0660 /data/misc/wifi/wpa_supplicant.conf
     mkdir /data/local 0751 root root
+
+# stock
+    chmod 2770 /data/radio
+    mkdir /efs/wifi 0775 system system
+    chown system system /efs/wifi/.mac.info
+    chmod 0664 /efs/wifi/.mac.info
 
     # For security reasons, /data/local/tmp should always be empty.
     # Do not place files or directories in /data/local/tmp
@@ -244,10 +266,38 @@ on post-fs-data
     mkdir /data/ssh/empty 0700 root root
     mkdir /data/radio 0770 radio radio
 
+# stock
+    # SA, System SW, SAMSUNG create log directory
+    mkdir /data/log 0775 system log
+    chown system log /data/log
+    chmod 0775 /data/log
+    chmod 0775 /data/anr
     # create dalvik-cache and double-check the perms, so as to enforce our permissions
     mkdir /data/dalvik-cache 0771 system system
     chown system system /data/dalvik-cache
     chmod 0771 /data/dalvik-cache
+
+# stock, patched fake
+    symlink /data/dalvik-cache /cache/dalvik-cache
+
+# stock begin
+    # battery
+    chown system radio /sys/class/power_supply/battery/batt_reset_soc
+    
+    # sensor
+    mkdir /data/misc/sensor 0775 system system
+    mkdir /data/tmp 0775 system system
+    mkdir /data/etc/sensor 0775 system system
+
+    chown system system /data/misc/sensor
+    chmod 0775 /data/misc/sensor    
+
+    chown system system /data/tmp
+    chmod 0775 /data/tmp
+    
+    chown system system /data/etc/sensor
+    chmod 0775 /data/etc/sensor
+# stock end
 
     # create resource-cache and double-check the perms
     mkdir /data/resource-cache 0771 system system
@@ -264,6 +314,52 @@ on post-fs-data
     # Separate location for storing security policy files on data
     mkdir /data/security 0711 system system
 
+# stock begin
+#[ SEC_MM_DRM
+    # ? ? 4 GB -> ICS ??  ?? ?? ?. ICS ? ? ?o? .
+    # [ save OMA DB, when upgrading from GB to ICS    
+    mkdir /data/system/databases 0771 system system
+    copy /data/data/com.sec.android.providers.drm/databases/drmdatabase.db /data/system/databases/drmdatabase.db
+    chown system system /data/system/databases/drmdatabase.db
+    chmod 0774 /data/system/databases/drmdatabase.db	
+    # ]
+    
+    # DRM directory creation
+    mkdir /system/etc/security/.drm 0775
+    chown root root /system/etc/security/.drm
+    chmod 0775 /system/etc/security/.drm
+
+    # Added for Playready DRM Support
+    mkdir /data/data/.drm 0775
+    chown drm system /data/data/.drm
+    chmod 0775 /data/data/.drm
+    mkdir /data/data/.drm/.playready 0775
+    chown drm system /data/data/.drm/.playready
+    chmod 0775 /data/data/.drm/.playready
+
+    # Added drm folder to copy drm plugins
+    mkdir /system/lib/drm 0775
+    chown root root /system/lib/drm
+    chmod 0775 /system/lib/drm
+
+    # DivX DRM
+    mkdir /efs/.files 0775
+    mkdir /efs/.files/.dx1 0775
+    mkdir /efs/.files/.dm33 0775
+    mkdir /efs/.files/.mp301 0775
+    chown media system /efs/.files/.dx1
+    chown media system /efs/.files/.dm33
+    chown media system /efs/.files/.mp301
+    chmod 0775 /efs/.files/.dx1
+    chmod 0775 /efs/.files/.dm33
+    chmod 0775 /efs/.files/.mp301
+#]
+    # create directory for ril data
+    mkdir /data/misc/radio 0775 radio radio
+    chmod 0775 /data/misc/radio
+    mkdir /data/misc/radio/hatp 0775 radio system
+# stock end
+
     # If there is no fs-post-data action in the init.<device>.rc file, you
     # must uncomment this line, otherwise encrypted filesystems
     # won't work.
@@ -273,7 +369,66 @@ on post-fs-data
 # Include extra init file
     import /init.cm.rc
 
+# stock begin
+# MTP permission
+	chmod 0660 /dev/usb_mtp_gadget
+
+	chown system system /dev/usb_mtp_gadget
+
+# wifi
+    mkdir /efs/wifi 0775 system system
+# for TRP/TIS
+    write /data/.psm.info 1
+    chown system root /data/.psm.info
+    chmod 0660 /data/.psm.info
+# stock end
+
 on boot
+
+# stock begin
+# SISO-ANDR-PERF :: START Changing governor to performance and scheduler to noop once boot is started
+# SISO-ANDR-PERF :: START Changing governor to userspace at 1008000 and scheduler to noop once boot is started
+		write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor "userspace"
+		write /sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed "1008000"
+    write /sys/block/mmcblk0/queue/scheduler noop
+# SISO-ANDR-PERF :: END HERE
+# basic network init
+    ifup lo
+    hostname localhost
+    domainname localdomain
+
+# set RLIMIT_NICE to allow priorities from 19 to -20
+    setrlimit 13 40 40
+
+# Memory management.  Basic kernel parameters, and allow the high
+# level system server to be able to adjust the kernel OOM driver
+# parameters to match how it is managing things.
+    write /proc/sys/vm/overcommit_memory 1
+    write /proc/sys/vm/min_free_order_shift 4
+    chown root system /sys/module/lowmemorykiller/parameters/adj
+    chmod 0664 /sys/module/lowmemorykiller/parameters/adj
+    chown root system /sys/module/lowmemorykiller/parameters/minfree
+    chmod 0664 /sys/module/lowmemorykiller/parameters/minfree
+
+    # Tweak background writeout
+    write /proc/sys/vm/dirty_expire_centisecs 200
+    write /proc/sys/vm/dirty_background_ratio  5
+
+    # Permissions for System Server and daemons.
+    chown radio system /sys/android_power/state
+    chown radio system /sys/android_power/request_state
+    chown radio system /sys/android_power/acquire_full_wake_lock
+    chown radio system /sys/android_power/acquire_partial_wake_lock
+    chown radio system /sys/android_power/release_wake_lock
+    chown system system /sys/power/state
+    chown system system /sys/power/wakeup_count
+    chown radio system /sys/power/wake_lock
+    chown radio system /sys/power/wake_unlock
+    chmod 0660 /sys/power/state
+    chmod 0660 /sys/power/wake_lock
+    chmod 0660 /sys/power/wake_unlock
+# stock end
+
     # interactive governor
     chown system system /sys/devices/system/cpu/cpufreq/interactive/timer_rate
     chmod 0660 /sys/devices/system/cpu/cpufreq/interactive/timer_rate
@@ -345,21 +500,168 @@ on boot
     write /proc/sys/vm/dirty_expire_centisecs 200
     write /proc/sys/vm/dirty_background_ratio  5
 
-    # Permissions for System Server and daemons.
-    chown radio system /sys/android_power/state
-    chown radio system /sys/android_power/request_state
-    chown radio system /sys/android_power/acquire_full_wake_lock
-    chown radio system /sys/android_power/acquire_partial_wake_lock
-    chown radio system /sys/android_power/release_wake_lock
-    chown system system /sys/power/autosleep
-    chown system system /sys/power/state
-    chown system system /sys/power/wakeup_count
-    chown radio system /sys/power/wake_lock
-    chown radio system /sys/power/wake_unlock
-    chmod 0660 /sys/power/state
-    chmod 0660 /sys/power/wake_lock
-    chmod 0660 /sys/power/wake_unlock
+#tsp,tkey,key
+    chown system system /sys/class/sec/tsp/cmd
+    chown system system /sys/class/sec/tsp/cmd_result
+    chown system system /sys/class/sec/tsp/cmd_status
+    chown system system /sys/class/sec/tsp/power
+    chown system system /sys/class/sec/tsp/close_tsp_test
+    chown system system /sys/class/sec/sec_touchkey/brightness
 
+# bmm selftest
+#geomagnetic sensor
+    chown system system /sys/class/input/input4/chip_id
+    chown system system /sys/class/input/input4/raw_data
+    chown system system /sys/class/input/input4/op_mode
+    chown system system /sys/class/input/input4/selftest
+    chown system system /sys/class/input/input4/value
+    chown system system /sys/class/input/input4/enable
+    chown system system /sys/class/input/input4/delay
+    chown system system /sys/class/input/input4/rept_xy
+    chown system system /sys/class/input/input4/rept_z  
+    chown system system /sys/class/input/input4/odr
+    chown system system /sys/class/input/input4/layout
+    chown system system /sys/class/input/input4/value_raw
+
+    chmod 0664 /sys/class/input/input4/layout
+    chmod 0664 /sys/class/input/input4/chip_id
+    chmod 0664 /sys/class/input/input4/raw_data
+    chmod 0664 /sys/class/input/input4/op_mode
+    chmod 0664 /sys/class/input/input4/selftest
+    chmod 0664 /sys/class/input/input4/value
+    chmod 0664 /sys/class/input/input4/value_raw
+        
+    chown system system /sys/class/sensors/magnetic_sensor/chip_id
+    chown system system /sys/class/sensors/magnetic_sensor/raw_data
+    chown system system /sys/class/sensors/magnetic_sensor/op_mode
+    chown system system /sys/class/sensors/magnetic_sensor/selftest
+    chown system system /sys/class/sensors/magnetic_sensor/value
+    chown system system /sys/class/sensors/magnetic_sensor/enable
+    chown system system /sys/class/sensors/magnetic_sensor/delay
+    chown system system /sys/class/sensors/magnetic_sensor/rept_xy
+    chown system system /sys/class/sensors/magnetic_sensor/rept_z  
+    chown system system /sys/class/sensors/magnetic_sensor/odr
+    chown system system /sys/class/sensors/magnetic_sensor/layout
+    chown system system /sys/class/sensors/magnetic_sensor/value_raw
+    
+    chmod 0664 /sys/class/sensors/magnetic_sensor/layout
+    chmod 0664 /sys/class/sensors/magnetic_sensor/chip_id
+    chmod 0664 /sys/class/sensors/magnetic_sensor/raw_data
+    chmod 0664 /sys/class/sensors/magnetic_sensor/op_mode
+    chmod 0664 /sys/class/sensors/magnetic_sensor/selftest
+    chmod 0664 /sys/class/sensors/magnetic_sensor/value
+    chmod 0664 /sys/class/sensors/magnetic_sensor/value_raw
+    
+#acc sensor
+    chown system system /sys/class/input/input3/raw_data
+    chown system system /sys/class/input/input3/value
+    chown system system /sys/class/input/input3/fast_calibration_x
+    chown system system /sys/class/input/input3/fast_calibration_y
+    chown system system /sys/class/input/input3/fast_calibration_z
+    chown system system /sys/class/input/input3/eeprom_writing
+    chown system system /sys/class/input/input3/mode
+    chown system system /sys/class/input/input3/enable
+    chown system system /sys/class/input/input3/offset_filt_x
+    chown system system /sys/class/input/input3/offset_filt_y
+    chown system system /sys/class/input/input3/offset_filt_z
+    chown system system /sys/class/input/input3/selftest
+    chown system system /sys/class/input/input3/delay
+    chown system system /sys/class/input/input3/update
+    chown system system /sys/class/input/input3/range
+    chown system system /sys/class/input/input3/bandwidth
+    chown system system /sys/class/input/input3/layout
+
+    chmod 0664 /sys/class/input/input3/layout
+    chmod 0664 /sys/class/input/input3/raw_data
+    chmod 0664 /sys/class/input/input3/value
+    chmod 0664 /sys/class/input/input3/fast_calibration_x
+    chmod 0664 /sys/class/input/input3/fast_calibration_y
+    chmod 0664 /sys/class/input/input3/fast_calibration_z
+    chmod 0664 /sys/class/input/input3/eeprom_writing
+    chmod 0664 /sys/class/input/input3/enable
+
+    chmod 0664 /sys/devices/virtual/input/input3/calibration
+    chmod 0664 /sys/devices/virtual/input/input3/enable_int 
+    chmod 0664 /sys/devices/virtual/input/input3/fifo_framecount 
+    chmod 0664 /sys/devices/virtual/input/input3/fifo_mode
+    chmod 0664 /sys/devices/virtual/input/input3/fifo_trig_src
+    chmod 0664 /sys/devices/virtual/input/input3/flat_hold_time
+    chmod 0664 /sys/devices/virtual/input/input3/flat_theta 
+    chmod 0664 /sys/devices/virtual/input/input3/high_g_duration 
+    chmod 0664 /sys/devices/virtual/input/input3/high_g_threshold
+    chmod 0664 /sys/devices/virtual/input/input3/low_g_duration
+    chmod 0664 /sys/devices/virtual/input/input3/low_g_threshold 
+    chmod 0664 /sys/devices/virtual/input/input3/offset_x 
+    chmod 0664 /sys/devices/virtual/input/input3/offset_y
+    chmod 0664 /sys/devices/virtual/input/input3/offset_z 
+    chmod 0664 /sys/devices/virtual/input/input3/range
+    chmod 0664 /sys/devices/virtual/input/input3/reactive_alert
+    chmod 0664 /sys/devices/virtual/input/input3/selftest 
+    chmod 0664 /sys/devices/virtual/input/input3/slope_duration
+    chmod 0664 /sys/devices/virtual/input/input3/slope_no_mot_threshold 
+    chmod 0664 /sys/devices/virtual/input/input3/slope_threshold
+    chmod 0664 /sys/devices/virtual/input/input3/softreset 
+    chmod 0664 /sys/devices/virtual/input/input3/tap_quiet
+    chmod 0664 /sys/devices/virtual/input/input3/tap_samp 
+    chmod 0664 /sys/devices/virtual/input/input3/tap_shock
+#acc sensor
+    chown system system /sys/class/sensors/accelerometer_sensor/raw_data
+    chown system system /sys/class/sensors/accelerometer_sensor/value
+    chown system system /sys/class/sensors/accelerometer_sensor/fast_calibration_x
+    chown system system /sys/class/sensors/accelerometer_sensor/fast_calibration_y
+    chown system system /sys/class/sensors/accelerometer_sensor/fast_calibration_z
+    chown system system /sys/class/sensors/accelerometer_sensor/eeprom_writing
+    chown system system /sys/class/sensors/accelerometer_sensor/mode
+    chown system system /sys/class/sensors/accelerometer_sensor/enable
+    chown system system /sys/class/sensors/accelerometer_sensor/offset_filt_x
+    chown system system /sys/class/sensors/accelerometer_sensor/offset_filt_y
+    chown system system /sys/class/sensors/accelerometer_sensor/offset_filt_z
+    chown system system /sys/class/sensors/accelerometer_sensor/selftest
+    chown system system /sys/class/sensors/accelerometer_sensor/delay
+    chown system system /sys/class/sensors/accelerometer_sensor/update
+    chown system system /sys/class/sensors/accelerometer_sensor/range
+    chown system system /sys/class/sensors/accelerometer_sensor/bandwidth
+    chown system system /sys/class/sensors/accelerometer_sensor/reactive_alert
+    chown system system /sys/class/sensors/accelerometer_sensor/calibration
+    chown system system /sys/class/sensors/accelerometer_sensor/layout
+    
+    chmod 0664 /sys/class/sensors/accelerometer_sensor/layout    
+    chmod 0664 /sys/class/sensors/accelerometer_sensor/raw_data
+    chmod 0664 /sys/class/sensors/accelerometer_sensor/value
+    chmod 0664 /sys/class/sensors/accelerometer_sensor/fast_calibration_x
+    chmod 0664 /sys/class/sensors/accelerometer_sensor/fast_calibration_y
+    chmod 0664 /sys/class/sensors/accelerometer_sensor/fast_calibration_z
+    chmod 0664 /sys/class/sensors/accelerometer_sensor/eeprom_writing
+    chmod 0664 /sys/class/sensors/accelerometer_sensor/enable
+    chmod 0664 /sys/class/sensors/accelerometer_sensor/selftest
+    chmod 0664 /sys/class/sensors/accelerometer_sensor/calibration
+    chmod 0664 /sys/class/sensors/accelerometer_sensor/reactive_alert
+    
+    chown system system /efs/calibration_data    
+    chmod 0666 /efs/calibration_data
+
+#proximity sensor
+    chown system system /sys/class/input/input2/enable
+    chmod 0664 /sys/class/input/input2/enable
+
+    chown system system /sys/class/sensors/proximity_sensor/enable
+    chown system system /sys/class/sensors/proximity_sensor/state
+    chown system system /sys/class/sensors/proximity_sensor/name
+    chown system system /sys/class/sensors/proximity_sensor/vendor
+    chown system system /sys/class/sensors/proximity_sensor/prox_cal
+
+    chmod 0664 /sys/class/sensors/proximity_sensor/enable
+    chmod 0664 /sys/class/sensors/proximity_sensor/state
+    chmod 0664 /sys/class/sensors/proximity_sensor/name
+    chmod 0664 /sys/class/sensors/proximity_sensor/vendor
+    chmod 0664 /sys/class/sensors/proximity_sensor/prox_cal
+
+    chown system system /efs/prox_cal    
+    chmod 0666 /efs/prox_cal
+
+    chown system media_rw /sys/class/mdnie/mdnie/scenario
+    chown system media_rw /sys/class/mdnie/mdnie/outdoor
+    chown system system /sys/class/mdnie/mdnie/negative
     chown system system /sys/class/timed_output/vibrator/enable
     chown system system /sys/class/leds/keyboard-backlight/brightness
     chown system system /sys/class/leds/lcd-backlight/brightness
@@ -387,6 +689,18 @@ on boot
     chown system system /sys/kernel/ipv4/tcp_rmem_max
     chown root radio /proc/cmdline
 
+# stock begin
+# Camera
+    chown system system /sys/class/camera/rear/rear_flash    
+ 
+# For Datarouter
+    chown system system /dev/dun
+    chown system system /dev/ttyGS0
+    chown system system /dev/ttyGS1
+    chown system system /dev/ttyGS2
+    chown system system /dev/ttyGS3
+# stock end
+
 # Define TCP buffer sizes for various networks
 #   ReadMin, ReadInitial, ReadMax, WriteMin, WriteInitial, WriteMax,
     setprop net.tcp.buffersize.default 4096,87380,704512,4096,16384,110208
@@ -396,11 +710,21 @@ on boot
     setprop net.tcp.buffersize.hspa    4096,87380,704512,4096,16384,110208
     setprop net.tcp.buffersize.hsupa   4096,87380,704512,4096,16384,262144
     setprop net.tcp.buffersize.hsdpa   4096,87380,704512,4096,16384,262144
-    setprop net.tcp.buffersize.hspap   4096,87380,1220608,4096,16384,393216
     setprop net.tcp.buffersize.edge    4096,26280,35040,4096,16384,35040
     setprop net.tcp.buffersize.gprs    4096,8760,11680,4096,8760,11680
-    setprop net.tcp.buffersize.evdo    4096,87380,563200,4096,16384,262144
     setprop net.tcp.buffersize.evdo_b  4096,87380,704512,4096,16384,262144
+    setprop net.tcp.buffersize.evdo    4096,87380,563200,4096,16384,262144
+    setprop net.tcp.buffersize.hspap   4096,87380,1220608,4096,16384,393216
+
+# stock begin
+# Assign TCP buffer thresholds to be ceiling value of technology maximums
+# Increased technology maximums should be reflected here.
+    write /proc/sys/net/core/rmem_max  2097152
+    write /proc/sys/net/core/wmem_max  1220608
+
+# volume up/down key 
+	chown radio system /sys/devices/platform/gpio-event/wakeup_keys
+# stock end
 
 # Set this property so surfaceflinger is not started by system_init
     setprop system_init.startsurfaceflinger 0
@@ -408,12 +732,43 @@ on boot
     class_start core
     class_start main
 
+# stock begin
+#Compcache Init
+    chmod 0600 /sys/block/zram0/disksize
+    chown system system /sys/block/zram0/disksize
+    write /sys/block/zram0/disksize 209715200
+    chmod 0600 /sys/block/zram0/initstate
+    chown system system /sys/block/zram0/initstate
+    write /sys/block/zram0/initstate 1
+    mkdir /dev/memcgrp 
+    mount cgroup none /dev/memcgrp memory
+    chmod 0700 /dev/memcgrp
+    chown system system /dev/memcgrp
+    mkdir /dev/memcgrp/hidden
+    chmod 0700 /dev/memcgrp/hidden
+    chown system system /dev/memcgrp/hidden
+    chown system system /dev/memcgrp/tasks
+    chown system system /dev/memcgrp/hidden/tasks
+    chmod 0600 /dev/memcgrp/tasks
+    chmod 0600 /dev/memcgrp/hidden/tasks
+    write /dev/memcgrp/hidden/memory.swappiness 100
+    write /dev/memcgrp/hidden/memory.soft_limit_in_bytes 0
+    write /proc/sys/vm/page-cluster 1
+# stock end
+
 on nonencrypted
     class_start late_start
 
 on charger
     class_start charger
 
+# stock begin
+# SISO-ANDR-PERF :: START Changing governor to interactive and scheduler to cfq after boot complete
+on property:sys.boot_completed=1
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor	ondemand
+    write /sys/block/mmcblk0/queue/scheduler cfq
+# SISO-ANDR-PERF :: END HERE
+# stock end
 on property:vold.decrypt=trigger_reset_main
     class_reset main
 
@@ -471,7 +826,11 @@ service adbd /sbin/adbd
 on property:ro.kernel.qemu=1
     start adbd
 
-service servicemanager /system/bin/servicemanager
+on fs
+    mount ext4 /dev/block/mmcblk0p23 /preload nosuid nodev noatime wait ro
+    setprop storage.preload.complete 1
+
+service servicemanager /system/bin/logwrapper /system/bin/servicemanager
     class core
     user system
     group system
@@ -481,10 +840,11 @@ service servicemanager /system/bin/servicemanager
     onrestart restart surfaceflinger
     onrestart restart drm
 
-service vold /system/bin/vold
+service vold /system/bin/logwrapper /system/bin/vold
     class core
     socket vold stream 0660 root mount
     ioprio be 2
+    socket dir_enc_report stream 0660 root mount
 
 service netd /system/bin/logwrapper /system/bin/netd
     class main
@@ -500,7 +860,7 @@ service ril-daemon /system/bin/logwrapper /system/bin/rild
     socket rild stream 660 root radio
     socket rild-debug stream 660 radio system
     user root
-    group radio cache inet misc audio sdcard_r sdcard_rw qcom_oncrpc qcom_diag log
+    group radio cache inet misc audio sdcard_rw qcom_oncrpc diag qcom_diag sdcard_r
 
 service surfaceflinger /system/bin/logwrapper /system/bin/surfaceflinger
     class main
@@ -508,6 +868,10 @@ service surfaceflinger /system/bin/logwrapper /system/bin/surfaceflinger
     group graphics drmrpc
     onrestart restart zygote
 
+service sensord /system/bin/logwrapper /system/bin/sensord
+    class main
+    user system
+    group system
 service zygote /system/bin/logwrapper /system/bin/app_process -Xzygote /system/bin --zygote --start-system-server
     class main
     socket zygote stream 660 root system
@@ -515,26 +879,28 @@ service zygote /system/bin/logwrapper /system/bin/app_process -Xzygote /system/b
     onrestart write /sys/power/state on
     onrestart restart media
     onrestart restart netd
+    onrestart restart sensord
 
 service drm /system/bin/logwrapper /system/bin/drmserver
     class main
     user drm
-    group drm system inet drmrpc
+# fix by stock
+    group drm system inet drmrpc sdcard_r sdcard_rw media_rw radio
 
 service media /system/bin/logwrapper /system/bin/mediaserver
     class main
     user media
-    group audio camera inet net_bt net_bt_admin net_bw_acct drmrpc qcom_diag
+    group system audio camera inet net_bt net_bt_admin net_bw_acct drmrpc sdcard_rw sdcard_r media_rw
     ioprio rt 4
 
-service bootanim /system/bin/bootanimation
+service bootanim /system/bin/logwrapper /system/bin/bootanimation
     class main
     user graphics
     group graphics
     disabled
     oneshot
 
-service installd /system/bin/installd
+service installd /system/bin/logwrapper /system/bin/installd
     class main
     socket installd stream 600 system system
 
@@ -546,6 +912,7 @@ service racoon /system/bin/logwrapper /system/bin/racoon
     disabled
     oneshot
 
+# MTPd could not be wrapped into logwrapper?
 service mtpd /system/bin/mtpd
     class main
     socket mtpd stream 600 system system
@@ -577,3 +944,6 @@ service mdnsd /system/bin/logwrapper /system/bin/mdnsd
     socket mdnsd stream 0660 mdnsr inet
     disabled
     oneshot
+
+on property:ro.dumpstate.dmesg=1
+	write /proc/sys/kernel/dmesg_restrict 0

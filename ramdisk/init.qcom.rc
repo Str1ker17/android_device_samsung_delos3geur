@@ -4,14 +4,20 @@ on early-init
     mount debugfs debugfs /sys/kernel/debug
 
 on init
-    #export EXTERNAL_STORAGE /storage/sdcard0
-    export SECONDARY_STORAGE /storage/sdcard1
+    # for backwards compatibility
+    export EXTERNAL_STORAGE /storage/sdcard0
+    mkdir /storage 0550 system sdcard_r
+    mkdir /storage/sdcard0 0000 system system
+    symlink /storage/sdcard0 /sdcard
+    symlink /storage/sdcard0 /mnt/sdcard
+# map "real" external storages paths also in same way. backwards compatibility.
+    symlink /storage/extSdCard /mnt/extSdCard
 
     # See storage config details at http://source.android.com/tech/storage/
     mkdir /mnt/shell/emulated 0700 shell shell
     mkdir /storage/emulated 0555 root root
 
-    export EXTERNAL_STORAGE /storage/emulated/legacy
+    #export EXTERNAL_STORAGE /storage/emulated/legacy
     export EMULATED_STORAGE_SOURCE /mnt/shell/emulated
     export EMULATED_STORAGE_TARGET /storage/emulated
 
@@ -22,9 +28,9 @@ on init
     symlink /storage/emulated/legacy /storage/sdcard0
     symlink /mnt/shell/emulated/0 /storage/emulated/legacy
 
-    export SECONDARY_STORAGE /storage/sdcard1
-    mkdir /storage/sdcard1 0000 system system
-    symlink /storage/sdcard1 /mnt/external_sd
+    export SECONDARY_STORAGE /storage/extSdCard
+    mkdir /storage/extSdCard 0000 system system
+    symlink /storage/extSdCard /mnt/external_sd
 
     # create directory for ril data
     mkdir /data/misc/radio 0775 radio radio
