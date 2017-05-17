@@ -6,10 +6,8 @@ ro.secure=0
 ro.debuggable=1
 persist.sys.usb.config=mtp,adb
 # this seems to be compatible with CM adbd
-#service.adb.root=1
-# obsolete
-#ro.adb.secure=0
-#persist.service.adb.root=1
-#persist.service.adb.enable=1
-# no need anymore
-#persist.sys.usb.config2=adb
+service.adb.root=1
+# is this obsolete?
+persist.service.adb.root=1
+# Grace5921 said that this is compatible with 4.2+. Believe him.
+persist.service.adb.enable=1
