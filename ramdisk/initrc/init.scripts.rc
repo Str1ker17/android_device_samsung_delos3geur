@@ -1,0 +1,102 @@
+on early-boot
+    start comp-set
+    start version-set
+
+service comp-set /system/bin/sh /system/etc/init.qcom.composition_type.sh
+    class late_start
+    user root
+    critical
+    disabled
+    oneshot
+
+service version-set /system/bin/sh /system/etc/init.target.8x25.sh
+    class late_start
+    user root
+    critical
+    disabled
+    oneshot
+
+service qcom-post-fs /system/bin/sh /system/etc/init.qcom.post_fs.sh
+    class core
+    user root
+    disabled
+    oneshot
+
+service qcom-sh /system/bin/sh /init.qcom.sh
+    class late_start
+    user root
+    oneshot
+
+service qcom-post-boot /system/bin/sh /system/etc/init.qcom.post_boot.sh
+    class late_start
+    user root
+    disabled
+    oneshot
+
+service wifi-sdio-on /system/bin/sh /system/etc/init.qcom.sdio.sh
+    class late_start
+    group wifi inet
+    disabled
+    oneshot
+
+on property:sys.boot_completed=1
+    start qcom-post-boot
+
+# import cne init file
+on post-fs
+    export_rc /persist/init.cne.rc
+    start qcom-post-fs
+
+service qcom-c_core-sh /system/bin/sh /init.qcom.class_core.sh
+    class core
+    user root
+    oneshot
+
+service qcom-c_main-sh /system/bin/sh /init.qcom.class_main.sh
+    class main
+    user root
+    oneshot
+
+on property:vold.decrypt=trigger_restart_framework
+    start qcom-c_main-sh
+    
+on property:sys.radio.shutdown=true
+   exec /system/bin/sh /system/etc/init.qcom.efs.sync.sh
+   user root
+   group root
+   
+service ril-qmi /system/bin/sh /init.qcom.ril.path.sh
+    class main
+    user root
+    oneshot
+    
+service flash_recovery /system/etc/install-recovery.sh
+    class main
+    oneshot
+    
+service hcidump /system/bin/sh /system/etc/hcidump.sh
+    user bluetooth
+    group bluetooth system net_bt_admin net_admin
+    disabled
+    oneshot
+    
+service griffon /system/xbin/gps-start.sh
+   class main
+   socket gpsd39 dgram 0660 gps system inet
+   socket gpsd16 dgram 0660 gps system inet
+   user gps
+   group gps system qcom_diag diag log inet
+   
+service fm_dl /system/bin/sh /system/etc/init.qcom.fm.sh
+    class late_start
+    user root
+    group system qcom_oncrpc
+    disabled
+    oneshot
+
+service btwlancoex /system/bin/init.qcom.coex.sh
+    class late_start
+    user bluetooth
+    group bluetooth net_bt_admin inet net_admin net_raw
+    disabled
+    oneshot
