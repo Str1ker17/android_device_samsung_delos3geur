@@ -1,0 +1,29 @@
+on boot
+    # create symlink for fb1 as HDMI
+    symlink /dev/graphics/fb1 /dev/graphics/hdmi
+
+    # setup permissions for fb1 related nodes
+    chown system graphics /sys/class/graphics/fb1/hpd
+    chmod 0664 /sys/devices/virtual/graphics/fb1/hpd
+    chmod 0664 /sys/devices/virtual/graphics/fb1/video_mode
+    chmod 0664 /sys/devices/virtual/graphics/fb1/format_3d
+
+    # Change owner and group for media server and surface flinger
+    chown system system /sys/devices/virtual/graphics/fb1/format_3d
+    
+#on property:init.svc.surfaceflinger=stopped
+#    stop ppd
+#    stop hdmid
+
+# no such binary, but someday that may change.    
+#service hdmid /system/bin/hdmid
+#    class late_start
+#    socket hdmid stream 0660 root system graphics
+#    disabled
+
+#service ppd /system/bin/mm-pp-daemon
+#    class late_start
+#    user system
+#    socket pps stream 0660 system system graphics
+#    group system graphics
+    

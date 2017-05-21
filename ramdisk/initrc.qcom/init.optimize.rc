@@ -1,0 +1,77 @@
+on boot
+    # SISO-ANDR-PERF :: START Changing governor to performance and scheduler to noop once boot is started
+    # SISO-ANDR-PERF :: START Changing governor to userspace at 1008000 and scheduler to noop once boot is started
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor "userspace"
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed "1008000"
+    write /sys/block/mmcblk0/queue/scheduler noop
+    # SISO-ANDR-PERF :: END HERE
+    
+   start gpu_dcvsd
+   
+# SISO-ANDR-PERF :: START Changing governor to interactive and scheduler to cfq after boot complete
+on property:sys.boot_completed=1
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor    ondemand
+    write /sys/block/mmcblk0/queue/scheduler cfq
+# SISO-ANDR-PERF :: END HERE
+
+    #start qcom-post-boot
+    #echo "ondemand" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+    write /sys/devices/system/cpu/cpufreq/ondemand/up_threshold 90
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 245760
+    
+    exec /system/bin/mount -t debugfs none /sys/kernel/debug
+    
+    chown system root /sys/devices/system/cpu/cpufreq/ondemand/sampling_rate
+    chown system root /sys/devices/system/cpu/cpufreq/ondemand/sampling_down_factor
+    chown system root /sys/devices/system/cpu/cpufreq/ondemand/io_is_busy
+    # if ro.boot.emmc == true
+    chown system root /sys/devices/platform/rs300000a7.65536/force_sync
+    chown system root /sys/devices/platform/rs300000a7.65536/sync_sts
+    chown system root /sys/devices/platform/rs300100a7.65536/force_sync
+    chown system root /sys/devices/platform/rs300100a7.65536/sync_sts
+    
+    write /sys/devices/platform/msm_sdcc.1/idle_timeout 10
+    
+    # Enable Power modes and set the CPU Freq Sampling rates
+    #start qosmgrd
+    write /sys/module/pm2/modes/cpu0/standalone_power_collapse/idle_enabled 0
+    write /sys/module/pm2/modes/cpu1/standalone_power_collapse/idle_enabled 0
+    write /sys/module/pm2/modes/cpu2/standalone_power_collapse/idle_enabled 0
+    write /sys/module/pm2/modes/cpu3/standalone_power_collapse/idle_enabled 0
+    write /sys/module/pm2/modes/cpu0/standalone_power_collapse/suspend_enabled 1
+    write /sys/module/pm2/modes/cpu1/standalone_power_collapse/suspend_enabled 1
+    write /sys/module/pm2/modes/cpu2/standalone_power_collapse/suspend_enabled 1
+    write /sys/module/pm2/modes/cpu3/standalone_power_collapse/suspend_enabled 1
+    #SuspendPC:
+    write /sys/module/pm2/modes/cpu0/power_collapse/suspend_enabled 1
+    #IdlePC:
+    write /sys/module/pm2/modes/cpu0/power_collapse/idle_enabled 1
+    write /sys/devices/system/cpu/cpufreq/ondemand/sampling_rate 25000
+    
+    write /sys/module/lowmemorykiller/parameters/adj "0,1,2,4,9,12"
+    write /proc/sys/vm/min_free_kbytes 5120
+
+service thermald /system/bin/thermald -c /system/etc/thermald.conf 
+   class late_start
+   user root
+   group root
+
+service mpdecision /system/bin/mpdecision --no_sleep --avg_comp
+    class late_start
+    user root
+
+service gpu_dcvsd /system/bin/gpu_dcvsd
+    class late_start
+    user root
+    oneshot
+
+#service qosmgrd /system/bin/qosmgr /system/etc/qosmgr_rules.xml
+#    user system
+#    group system
+#    disabled
+
+# no such binary
+#service battery_monitor /system/bin/battery_monitor
+#    user system
+#    group system
+#    disabled

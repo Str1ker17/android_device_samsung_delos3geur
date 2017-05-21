@@ -12,7 +12,7 @@ import /init.trace.rc
 
 on early-init
     # Set init and its forked children's oom_adj.
-    write /proc/1/oom_adj -16
+    write /proc/1/oom_score_adj -16
 
     # Set the security context for the init process.
     # This should occur before anything else (e.g. ueventd) is started.
@@ -36,11 +36,11 @@ on early-init
 
 on init
 
-# assume Asia/Novosibirsk
-sysclktz 7
+    # I will assume Asia/Novosibirsk, but not today.
+    sysclktz 0
 
-# increase log level
-loglevel 5
+    # increase log level
+    loglevel 5
 
 # setup the global environment
     export PATH /sbin:/vendor/bin:/system/sbin:/system/bin:/system/xbin
@@ -71,6 +71,7 @@ loglevel 5
     mkdir /data 0771 system system
     mkdir /cache 0771 system cache
     mkdir /config 0500 root root
+    mkdir /efs 0771 system radio
 
     # See storage config details at http://source.android.com/tech/storage/
     mkdir /mnt/shell 0700 shell shell
