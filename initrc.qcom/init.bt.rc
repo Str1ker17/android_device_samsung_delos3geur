@@ -83,3 +83,18 @@ service synergy_fm_init /system/bin/synergy_service
     class main
     group bluetooth net_bt_admin misc sdcard_rw
     disabled
+    
+# Must have -d -z -n -v -s -w wlan0 parameters for atheros btfilter.
+service btwlancoex /system/bin/abtfilt -d -z -n -v -q -s -w wlan0
+    class late_start
+    user bluetooth
+    group bluetooth net_bt_admin inet net_admin net_raw
+    disabled
+    oneshot
+
+# no such file
+#service hcidump /system/bin/sh /system/etc/hcidump.sh
+#    user bluetooth
+#    group bluetooth system net_bt_admin net_admin
+#    disabled
+#    oneshot

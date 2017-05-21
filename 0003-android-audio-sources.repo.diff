@@ -1,0 +1,68 @@
+project frameworks/av/
+diff --git a/media/libstagefright/QCUtilityClass.cpp b/media/libstagefright/QCUtilityClass.cpp
+index 1efc040..d5edae1 100644
+--- a/media/libstagefright/QCUtilityClass.cpp
++++ b/media/libstagefright/QCUtilityClass.cpp
+@@ -260,8 +260,15 @@ uint32_t QCUtilityClass::helper_getCodecSpecificQuirks(KeyedVector<AString, size
+     uint32_t bit = 0, value = 0;
+     for (i = 0; i < numQuirks; i++)
+     {
++        ALOGW("quirk %u of %u", i, numQuirks);
+         ssize_t index = mCodecQuirks.indexOfKey(quirks.itemAt(i));
++        ALOGW("index: %u", index);
++        if(index == 4294967294) {
++            ALOGE("Invalid quirk index");
++            continue;
++        }
+         bit = mCodecQuirks.valueAt(index);
++        ALOGW("bit: %u", bit);
+         value |= 1ul << bit;
+     }
+     return value;
+
+project hardware/libhardware_legacy/
+diff --git a/audio/AudioPolicyManagerBase.cpp b/audio/AudioPolicyManagerBase.cpp
+index 9c48d35..28bf336 100644
+--- a/audio/AudioPolicyManagerBase.cpp
++++ b/audio/AudioPolicyManagerBase.cpp
+@@ -3429,8 +3429,10 @@ const struct StringToEnum sDeviceNameToEnumTable[] = {
+     STRING_TO_ENUM(AUDIO_DEVICE_IN_BLUETOOTH_SCO_HEADSET),
+     STRING_TO_ENUM(AUDIO_DEVICE_IN_WIRED_HEADSET),
+ #ifdef QCOM_HARDWARE
++#if !defined(ICS_AUDIO_BLOB) && !defined(MR0_AUDIO_BLOB)
+     STRING_TO_ENUM(AUDIO_DEVICE_IN_ANC_HEADSET),
+ #endif
++#endif
+     STRING_TO_ENUM(AUDIO_DEVICE_IN_AUX_DIGITAL),
+ #if defined(QCOM_FM_ENABLED) || defined(STE_FM)
+     STRING_TO_ENUM(AUDIO_DEVICE_IN_FM_RX),
+@@ -3443,9 +3445,11 @@ const struct StringToEnum sDeviceNameToEnumTable[] = {
+     STRING_TO_ENUM(AUDIO_DEVICE_IN_DGTL_DOCK_HEADSET),
+     STRING_TO_ENUM(AUDIO_DEVICE_IN_USB_ACCESSORY),
+ #ifdef QCOM_HARDWARE
++#if !defined(ICS_AUDIO_BLOB) && !defined(MR0_AUDIO_BLOB)
+     STRING_TO_ENUM(AUDIO_DEVICE_IN_PROXY),
+     STRING_TO_ENUM(AUDIO_DEVICE_IN_COMMUNICATION),
+ #endif
++#endif
+ };
+ 
+ const struct StringToEnum sFlagNameToEnumTable[] = {
+
+project system/core/
+diff --git a/include/system/audio.h b/include/system/audio.h
+index e9bc3e8..2afaaaf 100644
+--- a/include/system/audio.h
++++ b/include/system/audio.h
+@@ -468,9 +468,11 @@ enum {
+                                AUDIO_DEVICE_IN_USB_ACCESSORY |
+                                AUDIO_DEVICE_IN_USB_DEVICE |
+ #ifdef QCOM_HARDWARE
++#if !defined(ICS_AUDIO_BLOB) && !defined(MR0_AUDIO_BLOB)
+                                AUDIO_DEVICE_IN_ANC_HEADSET |
+                                AUDIO_DEVICE_IN_PROXY |
+ #endif
++#endif
+ #if defined(QCOM_FM_ENABLED) || defined(STE_FM)
+                                AUDIO_DEVICE_IN_FM_RX |
+                                AUDIO_DEVICE_IN_FM_RX_A2DP |  

@@ -94,6 +94,7 @@ on nonencrypted
 on property:vold.decrypt=trigger_restart_framework
     setprop ro.fuse_sdcard ${persist.fuse_sdcard}
     
+    
 service rmt_storage /system/bin/rmt_storage
     class core
     user root

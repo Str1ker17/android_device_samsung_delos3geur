@@ -156,7 +156,7 @@ on boot
     chown system system /sys/class/mdnie/mdnie/negative
 
 on post-fs-data
-	# sensor
+    # sensor
     mkdir /data/misc/sensor 0775 system system
     mkdir /data/tmp 0775 system system
     mkdir /data/etc/sensor 0775 system system
@@ -171,8 +171,8 @@ on post-fs-data
     chmod 0775 /data/etc/sensor   
     
 service sensord /system/bin/sensord
-	class main
-	user system
-	group system
+    class main
+    user system
+    group system
 #    oneshot
 #    start sensord

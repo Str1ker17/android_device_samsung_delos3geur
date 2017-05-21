@@ -1,10 +1,22 @@
 on early-boot
     # set RLIMIT_MEMLOCK to 64MB
     setrlimit 8 67108864 67108864
+    
+    # media properties from init.qcom.composition_type.sh
+    setprop ro.hw_plat 8x25
+    setprop lpa.decode true
+    setprop audio.decoder_override_check true
+    setprop use.non-omx.mp3.decoder true
+    setprop use.non-omx.aac.decoder true
+    setprop ro.qc.sdk.audio.fluencetype fluence
+    
+    # media properties from init.target.8x25.sh
+    setprop ac3.decode true
+    setprop af.resampler.quality 255
 
 on boot
     # volume up/down key 
-	chown radio system /sys/devices/platform/gpio-event/wakeup_keys
+    chown radio system /sys/devices/platform/gpio-event/wakeup_keys
     
     #Compcache Init
     chmod 0600 /sys/block/zram0/disksize
@@ -35,6 +47,16 @@ on boot
     chown system system /sys/class/sec/tsp/power
     chown system system /sys/class/sec/tsp/close_tsp_test
     chown system system /sys/class/sec/sec_touchkey/brightness
+    
+# import cne init file
+on post-fs
+    export_rc /persist/init.cne.rc
+    setprop wlan.driver.ath 1
+    # TODO: this is doubtful
+    #rm  /system/lib/modules/wlan.ko
+    #rm  /system/lib/modules/cfg80211.ko
+    #ln -s /system/lib/modules/ath6kl/ath6kl_sdio.ko /system/lib/modules/wlan.ko
+    #ln -s /system/lib/modules/ath6kl/cfg80211.ko /system/lib/modules/cfg80211.ko
     
 # msm specific files that need to be created on /data
 on post-fs-data
@@ -74,22 +96,11 @@ on post-fs-data
     chmod 0660 /data/.psm.info
 
     setprop vold.post_fs_data_done 1
-    
-on property:init.svc.surfaceflinger=stopped
-    stop ppd
-    stop hdmid
-    
-service hdmid /system/bin/hdmid
-    class late_start
-    socket hdmid stream 0660 root system graphics
-    disabled
 
-service ppd /system/bin/mm-pp-daemon
-    class late_start
-    user system
-    socket pps stream 0660 system system graphics
-    group system graphics
-
+service flash_recovery /system/etc/install-recovery.sh
+    class main
+    oneshot
+    
 service ds_fmc_appd /system/bin/ds_fmc_appd -p "rmnet0" -D
     class late_start
     group radio wifi inet
@@ -230,7 +241,7 @@ service powersnd /system/bin/samsungpowersoundplay
     oneshot
 
 on property:ro.dumpstate.dmesg=1
-	write /proc/sys/kernel/dmesg_restrict 0
+    write /proc/sys/kernel/dmesg_restrict 0
     
 # Restart adbd so it can run as root
 on property:service.adb.root=1

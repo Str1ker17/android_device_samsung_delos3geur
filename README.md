@@ -4,11 +4,13 @@
 Device is based on msm7x27a (msm7627a exactly) chip and msm8625 board.
 If you want to build:
 - disable hardware/ril directory
-- get hardware/qcom/display-legacy from github.com/TheWhisp/android_hardware_qcom_display-legacy/tree/jellybean-mr2
-- apply patches: patch -p1 < device/samsung/delos3geur/0001-msm7x27a-backport-patches-needed-by-cm10.patch
+- get hardware/qcom/display-legacy from TheWhisp/android_hardware_qcom_display-legacy/tree/jellybean-mr2
+- apply patches: 
+    + patch -p1 < device/samsung/delos3geur/0001-msm7x27a-backport-patches-needed-by-cm10.patch
+    + changes from 0003-android-audio-sources.repo.diff
+    + cd build && git apply ../device/samsung/delos3geur/0002-build-edify-script-optional.diff && cd .. (optional)
 
-Some source files patches are not included there. They will be included when I will have more time.
-Though, everything should be compilable.
+After this, everything should be compilable. Tell me if not.
 
 What's working:
 - It boots, so graphics
@@ -16,8 +18,8 @@ What's working:
 - Internal storage
 - External storage
 - Sensors (proprietary)
-- Lights HAL
 - CPU Hotplug (proprietary)
+- Lights HAL
 - Wi-Fi
 - Audio: speakerphone (but need more testing)
 - Audio: headset
@@ -25,12 +27,12 @@ What's working:
 - Flashlight
 
 What's under development:
-- Audio: microphone (not tested yet)
+- Audio: microphone (not working now)
 - Wi-Fi Direct (could not coexist with Wi-Fi)
-- GPS (HAL build OK, but LocationProvider from cm10 causes permanent wakelock, so it's turned off)
-- Hardware codecs
+- GPS
 - Power HAL
 - Offline charging (LPM)
+- Hardware codecs
 
 What's not working:
 - RIL

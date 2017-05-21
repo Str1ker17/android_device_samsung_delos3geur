@@ -19,13 +19,17 @@ persist.fuse_sdcard=true
 ro.sf.lcd_density=220
 ro.opengles.version=131072
 # from init scripts; graphics
-debug.composition.8x25.type=dyn
+#debug.composition.8x25.type=dyn
+# rewritten from init .sh scripts
+debug.composition.type=dyn
 
 # attempt to fix /system/bin/sh
 # is this overlayed with default.prop?
 #ro.secure=0
 #ro.debuggable=1
 #ro.adb.secure=0
+persist.service.cdrom.enable=1
+persist.service.cdrom.file=/system/drivers.iso
 cm.updater.uri=http://cyanogen.ultibot.ru/api
 
 # RIL
@@ -35,6 +39,8 @@ persist.dsds.enabled=true
 persist.radio.multisim.config=dsds
 persist.multisim.config=dsds
 ro.multi.rild=true
+# stripped out from init.ril.rc
+ro.telephony.call_ring.multiple=false
 
 ril.subscription.types=NV,RUIM
 persist.rild.nitz_plmn=
@@ -73,9 +79,11 @@ ro.telephony.default_network=3
 wifi.supplicant_scan_interval=30
 
 # Dalvik
+# first
 dalvik.vm.heapsize=24m
 dalvik.vm.heapstartsize=5m
 dalvik.vm.heapgrowthlimit=48m
+# duplicate?
 dalvik.vm.heapsize=128m
 dalvik.vm.heaputilization=0.25
 dalvik.vm.heapidealfree=8388608

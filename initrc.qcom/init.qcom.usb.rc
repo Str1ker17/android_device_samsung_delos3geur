@@ -27,19 +27,29 @@
 
 on init
     write /sys/class/android_usb/android0/f_rndis/wceis 1
+    
+    # from init.qcom.usb.sh
+    chown root system /sys/devices/platform/msm_hsusb/gadget/wakeup
+    chmod 220 /sys/devices/platform/msm_hsusb/gadget/wakeup
+    write /sys/class/android_usb/f_mass_storage/lun/nofua 1
+    
+#
+# Add support for exposing lun0 as cdrom in mass-storage
+#
+on property:persist.service.cdrom.enable=1
+    exec -- /system/bin/log -t "init.qcom.usb.rc" -p i "mounting usbcdrom lun"
+    write /sys/class/android_usb/android0/f_mass_storage/lun0/file ${persist.service.cdrom.file}
 
-service qcom-usb-sh /system/bin/sh /init.qcom.usb.sh
-    class core
-    user root
-    oneshot
-
+on property:persist.service.cdrom.enable=0
+    write /sys/class/android_usb/android0/f_mass_storage/lun0/file ""
+    
 on boot
     write /sys/class/android_usb/android0/iManufacturer $ro.manufacturer
     write /sys/class/android_usb/android0/iProduct $ro.model
     write /sys/class/android_usb/android0/iSerial $ro.serialno
     write /sys/class/android_usb/f_mass_storage/inquiry_string "Samsung"
-    write /sys/class/android_usb/f_mass_storage/vendor_string "SAMSUNG"
-    write /sys/class/android_usb/f_mass_storage/product_string "SGH-S7562"
+    write /sys/class/android_usb/f_mass_storage/vendor_string "Samsung"
+    write /sys/class/android_usb/f_mass_storage/product_string "GT-I8552"
 
 # USB Composite for Samsung USB Driver
 on property:sys.usb.config=mtp
