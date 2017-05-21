@@ -52,23 +52,23 @@ on fs
     mkdir /preload 0771 system system
 
 # from init.target.rc begin
-    mount_all fstab.qcom.base
+    mount_all /fstab.qcom.base
 
     # Keeping following partitions outside fstab file. As user may not have
     # these partition flashed on the device. Failure to mount any partition in fstab file
     # results in failure to launch late-start class.
 
-    wait /dev/block/platform/msm_sdcc.3/by-num/p22
-    check_fs /dev/block/platform/msm_sdcc.3/by-num/p22 ext4
-    mount ext4 /dev/block/platform/msm_sdcc.3/by-num/p22 /cache nosuid nodev barrier=1
+    #wait /dev/block/mmcblk0p22
+    #check_fs /dev/block/mmcblk0p22 ext4
+    #mount ext4 /dev/block/mmcblk0p22 /cache nosuid nodev barrier=1
 
-    wait /dev/block/platform/msm_sdcc.3/by-num/p12
-    check_fs /dev/block/platform/msm_sdcc.3/by-num/p12 ext4
-    mount ext4 /dev/block/platform/msm_sdcc.3/by-num/p12 /persist nosuid nodev barrier=1
+    #wait /dev/block/mmcblk0p12
+    #check_fs /dev/block/mmcblk0p12 ext4
+    #mount ext4 /dev/block/mmcblk0p12 /persist nosuid nodev barrier=1
 
-    wait /dev/block/platform/msm_sdcc.3/by-num/p16
-    check_fs /dev/block/platform/msm_sdcc.3/by-num/p16 ext4
-    mount ext4 /dev/block/platform/msm_sdcc.3/by-num/p16 /efs nosuid nodev barrier=1
+    #wait /dev/block/mmcblk0p16
+    #check_fs /dev/block/mmcblk0p16 ext4
+    #mount ext4 /dev/block/mmcblk0p16 /efs nosuid nodev barrier=1
     chown system radio /efs
     chmod 0771 /efs
 # from init.target.rc end
