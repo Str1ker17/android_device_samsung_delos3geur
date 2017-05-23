@@ -1,0 +1,74 @@
+on boot
+   chown gps system /sys/class/gpio/gpio7/value
+   chown gps system /sys/class/gpio/gpio7/direction
+   chmod 0644 /sys/class/gpio/gpio7/value
+   chmod 0644 /sys/class/gpio/gpio7/direction
+   
+# msm specific files that need to be created on /data
+on post-fs-data
+    #disable wiper by KHL
+    #Create directories for wiper services
+    mkdir /data/wpstiles/ 0755 shell
+    mkdir /data/wiper 0755 gps qcom_oncrpc
+
+    #Create directories for gpsone_daemon services
+    mkdir /data/misc/gpsone_d 0770 system gps
+
+    #Create directories for QuIPS
+    mkdir /data/misc/quipc 0770 gps system
+
+    #Create directories for Location services
+    mkdir /data/misc/location 0770 gps gps
+    mkdir /data/misc/location/mq 0770 gps gps
+    mkdir /data/misc/location/xtwifi 0770 gps gps
+
+service wiperiface /system/bin/logwrapper /system/bin/wiperiface
+    class late_start
+    user gps
+    group gps qcom_oncrpc net_raw
+    oneshot
+
+service gpsone_daemon /system/bin/logwrapper /system/bin/gpsone_daemon
+    class late_start
+    user gps
+    group gps qcom_oncrpc inet net_raw
+    # by init.qcom.sh, this service should start with late_start class on msm7627a
+    #disabled
+
+service quipc_igsn /system/bin/logwrapper /system/bin/quipc_igsn
+    class late_start
+    user gps
+    group inet gps
+    disabled
+
+service quipc_main /system/bin/logwrapper /system/bin/quipc_main
+    class late_start
+    user gps
+    group gps net_admin wifi inet
+    disabled
+
+service location_mq /system/bin/logwrapper /system/bin/location-mq
+    class late_start
+    user gps
+    group gps
+    disabled
+
+service xtwifi_inet /system/bin/logwrapper /system/bin/xtwifi-inet-agent
+    class late_start
+    user gps
+    group inet gps
+    disabled
+
+service xtwifi_client /system/bin/logwrapper /system/bin/xtwifi-client
+    class late_start
+    user gps
+    group net_admin wifi inet gps
+    disabled
+    
+# TODO: get rid of .sh scripts
+service griffon /system/bin/logwrapper /system/xbin/gps-start.sh
+   class main
+   socket gpsd39 dgram 0660 gps system inet
+   socket gpsd16 dgram 0660 gps system inet
+   user gps
+   group gps system qcom_diag diag log inet

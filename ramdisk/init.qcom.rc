@@ -14,6 +14,8 @@ import /initrc.qcom/init.interop.rc
 import /initrc.qcom/init.net.rc
 
 import /initrc.qcom/init.wifi.rc
+import /initrc.qcom/init.gps.rc
 import /initrc.qcom/init.sensors.rc
+import /initrc.qcom/init.camera.rc
 
 import /initrc.qcom/init.optimize.rc

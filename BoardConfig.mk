@@ -12,7 +12,7 @@ BOARD_SYSTEMIMAGE_PARTITION_SIZE := 1258291200
 BOARD_USERDATAIMAGE_PARTITION_SIZE := 5573804032
 # we should pass this argument to the kernel on QCOM boards
 BOARD_KERNEL_CMDLINE := androidboot.hardware=qcom
-# it seems to be unneccessary, but the first fine is for Android <= 4.1, second is for 4.2+
+# it seems to be unneccessary, but the first line is for Android <= 4.1, second is for 4.2+
 #BOARD_FORCE_RAMDISK_ADDRESS := 0x01300000
 BOARD_MKBOOTIMG_ARGS := --ramdisk_offset 0x01300000
 
@@ -24,12 +24,10 @@ TARGET_KERNEL_SOURCE := kernel/samsung/delos3geur
 TARGET_KERNEL_CONFIG := cm10_delos3geur_defconfig
 
 # processor <=> compiler compatibility
-TARGET_BOARD_PLATFORM := msm7x27a
 TARGET_CPU_ABI := armeabi-v7a
 TARGET_CPU_ABI2 := armeabi
 TARGET_ARCH_VARIANT := armv7-a-neon
 TARGET_CPU_VARIANT := cortex-a5
-TARGET_BOOTLOADER_BOARD_NAME := msm8625
 
 TARGET_GLOBAL_CFLAGS += -mtune=cortex-a5 -mfpu=neon -mfloat-abi=softfp
 TARGET_GLOBAL_CPPFLAGS += -mtune=cortex-a5 -mfpu=neon -mfloat-abi=softfp
@@ -39,6 +37,10 @@ TARGET_CORTEX_CACHE_LINE_32 := true
 ARCH_ARM_HAVE_32_BYTE_CACHE_LINES := true
 TARGET_USE_QCOM_BIONIC_OPTIMIZATION := true
 
+# HAL <=> system compatibility
+TARGET_BOOTLOADER_BOARD_NAME := msm8625
+TARGET_BOARD_PLATFORM := msm7x27a
+
 # force QCOM BSP and compilation for QCOM hardware. this is neccessary to do there.
 COMMON_GLOBAL_CFLAGS += -DQCOM_BSP -DQCOM_HARDWARE
 
@@ -46,10 +48,17 @@ COMMON_GLOBAL_CFLAGS += -DQCOM_BSP -DQCOM_HARDWARE
 BOARD_USES_QCOM_HARDWARE := true
 TARGET_USES_QCOM_BSP := true
 
+# TODO: get rid of excess CLI defines
+#clang: warning: argument unused during compilation: '-D QCOM_LEGACY_MMPARSE'
+#clang: warning: argument unused during compilation: '-D QCOM_LEGACY_OMX'
+#clang: warning: argument unused during compilation: '-D RIL_SUPPORTS_SEEK'
+#clang: warning: argument unused during compilation: '-D RIL_VARIANT_LEGACY'
+
 # this is for ALSA sound. exists in:
 # frameworks/av/media/libstagefright/LPAPlayerALSA.cpp
 # hardware/qcom/audio-caf/alsa_sound/AudioSessionOut.cpp
 # if we do not define it there, default value is 256
+# WARNING: in some other cases (cm without patches) default value might not be set in sources, then uncomment
 #COMMON_GLOBAL_CFLAGS += -DLPA_DEFAULT_BUFFER_SIZE=480
 
 # missing, custom and overlay includes are taken from there.
@@ -83,7 +92,8 @@ BOARD_NEEDS_MEMORYHEAPPMEM := true
 BOARD_USE_MHEAP_SCREENSHOT := true
 BOARD_EGL_WORKAROUND_BUG_10194508 := true
 HWUI_COMPILE_FOR_PERF := true
-COMMON_GLOBAL_CFLAGS += -DNO_TUNNEL_RECORDING
+# not found in cm10.1 sources
+#COMMON_GLOBAL_CFLAGS += -DNO_TUNNEL_RECORDING
 
 ##### TWEAKING AUDIO #####
 # if true, use audio HAL from device tree, NOT from hardware/qcom/audio*
@@ -201,10 +211,14 @@ BOARD_HAVE_QCOM_FM := false
 
 ##### FINALLY: IMAGES TO BUILD #####
 # What to build?
+# I use TWRP, so
 # We need only system, data (they built anyway) and boot images,
 # but without recovery ota_from_target_files fails in cm10.1.
 # Make him happy.
-TARGET_NO_BOOTLOADER := true # Samsung has their own bootloader
-TARGET_NO_RADIOIMAGE := true # and own radio firmware
-#TARGET_NO_RECOVERY := true   # I use TWRP, but without this ota_from_target_files fails
-#TARGET_NO_BOOTIMAGE := true # We definetely need boot.img
+#TARGET_NO_RECOVERY := true
+# We definetely need boot.img
+#TARGET_NO_BOOTIMAGE := true
+# Samsung has their own bootloader
+TARGET_NO_BOOTLOADER := true
+# and own radio firmware
+TARGET_NO_RADIOIMAGE := true

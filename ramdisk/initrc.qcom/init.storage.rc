@@ -3,6 +3,7 @@ on early-init
     
     # See storage config details at http://source.android.com/tech/storage/
     # Internal (/data/media) storage
+    mkdir /mnt/shell 0755 shell shell
     mkdir /mnt/shell/emulated 0700 shell shell
     mkdir /storage/emulated 0555 root root
 
@@ -50,17 +51,18 @@ on fs
     # these partition flashed on the device. Failure to mount any partition in fstab file
     # results in failure to launch late-start class.
 
-    wait /dev/block/platform/msm_sdcc.3/by-num/p22
-    check_fs /dev/block/platform/msm_sdcc.3/by-num/p22 ext4
-    mount ext4 /dev/block/platform/msm_sdcc.3/by-num/p22 /cache nosuid nodev barrier=1
+    wait /dev/block/mmcblk0p22
+    check_fs /dev/block/mmcblk0p22 ext4
+    mount ext4 /dev/block/mmcblk0p22 /cache nosuid nodev barrier=1
 
-    wait /dev/block/platform/msm_sdcc.3/by-num/p12
-    check_fs /dev/block/platform/msm_sdcc.3/by-num/p12 ext4
-    mount ext4 /dev/block/platform/msm_sdcc.3/by-num/p12 /persist nosuid nodev barrier=1
+    wait /dev/block/mmcblk0p12
+    check_fs /dev/block/mmcblk0p12 ext4
+    mount ext4 /dev/block/mmcblk0p12 /persist nosuid nodev barrier=1
 
-    wait /dev/block/platform/msm_sdcc.3/by-num/p16
-    check_fs /dev/block/platform/msm_sdcc.3/by-num/p16 ext4
-    mount ext4 /dev/block/platform/msm_sdcc.3/by-num/p16 /efs nosuid nodev barrier=1
+    wait /dev/block/mmcblk0p16
+    check_fs /dev/block/mmcblk0p16 ext4
+    mount ext4 /dev/block/mmcblk0p16 /efs nosuid nodev barrier=1
+    
     chown system radio /efs
     chmod 0771 /efs
     
@@ -92,6 +94,8 @@ on post-fs-data
     chmod 0771 /persist
     
     setprop vold.post_fs_data_done 1
+    # implicit
+    #start sdcard
 
 # always want emmc boot    
 #on property:ro.boot.emmc=true
@@ -110,6 +114,10 @@ on property:vold.decrypt=trigger_restart_framework
 service sdcard /system/bin/logwrapper /system/bin/sdcard /data/media /mnt/shell/emulated 1023 1023
     class late_start
     critical
+    # debug
+    onrestart /system/bin/ls -laR / > /data/rootfiles.txt
+    # implicit
+    #disabled
 
 service rmt_storage /system/bin/logwrapper /system/bin/rmt_storage
     class main

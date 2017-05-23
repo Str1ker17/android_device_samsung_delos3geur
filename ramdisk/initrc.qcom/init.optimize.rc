@@ -51,16 +51,16 @@ on property:sys.boot_completed=1
     write /sys/module/lowmemorykiller/parameters/adj "0,1,2,4,9,12"
     write /proc/sys/vm/min_free_kbytes 5120
 
-service thermald /system/bin/thermald -c /system/etc/thermald.conf 
+service thermald /system/bin/logwrapper /system/bin/thermald -c /system/etc/thermald.conf 
    class late_start
    user root
    group root
 
-service mpdecision /system/bin/mpdecision --no_sleep --avg_comp
+service mpdecision /system/bin/logwrapper /system/bin/mpdecision --no_sleep --avg_comp
     class late_start
     user root
 
-service gpu_dcvsd /system/bin/gpu_dcvsd
+service gpu_dcvsd /system/bin/logwrapper /system/bin/gpu_dcvsd
     class late_start
     user root
     oneshot

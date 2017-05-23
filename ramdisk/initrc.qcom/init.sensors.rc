@@ -170,7 +170,7 @@ on post-fs-data
     chown system system /data/etc/sensor
     chmod 0775 /data/etc/sensor   
     
-service sensord /system/bin/sensord
+service sensord /system/bin/logwrapper /system/bin/sensord
     class main
     user system
     group system

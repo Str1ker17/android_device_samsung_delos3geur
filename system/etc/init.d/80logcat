@@ -1,0 +1,3 @@
+#!/system/bin/sh
+logcat > /cache/last_logcat.txt &
+logcat > /data/media/last_logcat.txt &

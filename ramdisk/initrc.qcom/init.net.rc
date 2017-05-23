@@ -38,7 +38,7 @@ on boot
 on property:ro.data.large_tcp_window_size=true
     write /proc/sys/net/ipv4/tcp_adv_win_scale 1
     
-service sh-disableipv6 /system/bin/sh /sh.init.qcom.disableipv6.sh
+service sh-disableipv6 /system/bin/logwrapper /system/bin/sh /sh.init.qcom.disableipv6.sh
     class late_start
     user root
     oneshot

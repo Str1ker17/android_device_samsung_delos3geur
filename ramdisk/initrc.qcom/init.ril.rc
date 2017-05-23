@@ -54,16 +54,16 @@ on property:vold.decrypt=trigger_restart_framework
     start ril-daemon1
     start netmgrd
    
-service cnd /system/bin/cnd
+service cnd /system/bin/logwrapper /system/bin/cnd
     class late_start
     socket cnd stream 666 root radio
     
-service secril-daemon /system/bin/sec-ril
+service secril-daemon /system/bin/logwrapper /system/bin/sec-ril
     class main
     user root
     group radio cache inet misc audio sdcard_rw diag log
     
-service ril-daemon1 /system/bin/rild -c 1
+service ril-daemon1 /system/bin/logwrapper /system/bin/rild -c 1
     class main
     socket rild1 stream 660 root radio
     socket rild-debug1 stream 660 radio system
