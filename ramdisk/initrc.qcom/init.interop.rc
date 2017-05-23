@@ -7,6 +7,9 @@ on boot
 #    chmod 0660 /dev/smd7
 #    chown bluetooth bluetooth /dev/smd7
 
+    # Allow QMUX daemon to assign port open wait time
+    chown radio radio /sys/devices/virtual/hsicctl/hsicctl0/modem_wait
+    
     # For Datarouter
     chown system system /dev/dun
     chown system system /dev/ttyGS0
@@ -14,42 +17,50 @@ on boot
     chown system system /dev/ttyGS2
     chown system system /dev/ttyGS3
 
-on property:ro.use_data_netmgrd=false
+# this is supported on msm7627a
+#on property:ro.use_data_netmgrd=false
     # netmgr not supported on specific target
-    stop netmgrd
+#    stop netmgrd
 
-service bridgemgrd /system/bin/bridgemgrd
+service atfwd /system/bin/logwrapper /system/bin/ATFWD-daemon
+    class late_start
+    user system
+    group system radio
+    onrestart /system/bin/log -t RIL-ATFWD -p w "ATFWD daemon restarted"
+
+service bridgemgrd /system/bin/logwrapper /system/bin/bridgemgrd
     class late_start
     user radio
     group radio qcom_diag
     disabled
 
-service port-bridge /system/bin/port-bridge /dev/smd0 /dev/ttyGS0
+service port-bridge /system/bin/logwrapper /system/bin/port-bridge /dev/smd0 /dev/ttyGS0
     class late_start
     user system
     group system inet
     disabled
 
-service qmiproxy /system/bin/qmiproxy
+service qmiproxy /system/bin/logwrapper /system/bin/qmiproxy
     class main
     user radio
     group radio qcom_diag
     disabled
 
 # QMUX must be in multiple groups to support external process connections
-service qmuxd /system/bin/qmuxd
+service qmuxd /system/bin/logwrapper /system/bin/qmuxd
     class main
     user radio
     group radio audio bluetooth gps qcom_diag
     disabled
 
-service netmgrd /system/bin/netmgrd
+service netmgrd /system/bin/logwrapper /system/bin/netmgrd
     class main
     disabled
     
-service abtfilt /system/bin/abtfilt -d -z -n -v -q -s -w wlan0
-    class late_start
-    user bluetooth
-    group bluetooth net_bt_admin inet net_admin net_raw
-    disabled
-    oneshot
+# TODO: bluetooth
+#service abtfilt /system/bin/logwrapper /system/bin/abtfilt -d -z -n -v -q -s -w wlan0
+#    class late_start
+#    user bluetooth
+#    group bluetooth net_bt_admin inet net_admin net_raw
+#    disabled
+#    oneshot

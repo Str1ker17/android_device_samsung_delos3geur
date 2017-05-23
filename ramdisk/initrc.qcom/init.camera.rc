@@ -1,10 +1,12 @@
 on boot
     # Camera
     chown system system /sys/class/camera/rear/rear_flash
-   start qcamerasvr
+    # TODO: temporary workaround, fix permissions
+    chmod 0666 /sys/class/camera/rear/rear_flash
+    start qcamerasvr
 
 #start camera server as daemon
-service qcamerasvr /system/bin/mm-qcamera-daemon
+service qcamerasvr /system/bin/logwrapper /system/bin/mm-qcamera-daemon
     class late_start
     user camera
     group camera system inet audio

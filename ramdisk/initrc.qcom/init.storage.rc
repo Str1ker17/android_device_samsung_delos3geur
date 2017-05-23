@@ -1,29 +1,42 @@
 on early-init
     symlink /efs /factory
     
-    # for backwards compatibility
-    export EXTERNAL_STORAGE /storage/sdcard0
-    mkdir /storage 0550 system sdcard_r
-    mkdir /storage/sdcard0 0000 system system
-    symlink /storage/sdcard0 /sdcard
-    symlink /storage/sdcard0 /mnt/sdcard
-# map "real" external storages paths also in same way. backwards compatibility.
-    symlink /storage/extSdCard /mnt/extSdCard
-    symlink /storage/UsbDriveA /mnt/UsbDriveA
-    symlink /storage/UsbDriveB /mnt/UsbDriveB
-    symlink /storage/UsbDriveC /mnt/UsbDriveC
-    symlink /storage/UsbDriveD /mnt/UsbDriveD
-    symlink /storage/UsbDriveE /mnt/UsbDriveE
-    symlink /storage/UsbDriveF /mnt/UsbDriveF
+    # See storage config details at http://source.android.com/tech/storage/
+    # Internal (/data/media) storage
+    mkdir /mnt/shell 0755 shell shell
+    mkdir /mnt/shell/emulated 0700 shell shell
+    mkdir /storage/emulated 0555 root root
 
-    export SECONDARY_STORAGE /storage/extSdCard:/storage/UsbDriveA:/storage/UsbDriveB:/storage/UsbDriveC:/storage/UsbDriveD:/storage/UsbDriveE:/storage/UsbDriveF
-    mkdir /storage/extSdCard 0000 system system
-    mkdir /storage/UsbDriveA 0000 system system
-    mkdir /storage/UsbDriveB 0000 system system
-    mkdir /storage/UsbDriveC 0000 system system
-    mkdir /storage/UsbDriveD 0000 system system
-    mkdir /storage/UsbDriveE 0000 system system
-    mkdir /storage/UsbDriveF 0000 system system
+    # External storages
+    mkdir /mnt/media_rw/extSdCard 0700 media_rw media_rw
+    mkdir /storage/extSdCard 0700 root root
+    
+    mkdir /mnt/media_rw/usbdisk 0700 media_rw media_rw
+    mkdir /storage/usbdisk 0700 root root
+
+    # Prepare env vars
+    export EXTERNAL_STORAGE /storage/emulated/0
+    export EMULATED_STORAGE_SOURCE /mnt/shell/emulated
+    export EMULATED_STORAGE_TARGET /storage/emulated
+    export SECONDARY_STORAGE /storage/extSdCard
+
+    symlink /mnt/shell/emulated/0 /storage/emulated/legacy
+    symlink /mnt/shell/emulated/0 /storage/emulated/0
+    # the second line is more clear to understand
+    #symlink /storage/emulated/legacy /storage/sdcard0
+    symlink /mnt/shell/emulated/0 /storage/sdcard0
+    
+    symlink /storage/emulated/legacy /mnt/sdcard
+    symlink /storage/extSdCard /mnt/extSdCard
+    symlink /storage/usbdisk /mnt/usbdisk
+    
+    # Support legacy paths
+    symlink /mnt/shell/emulated /storage/emulated
+    # sdcard: cannot mount fuse filesystem (error 2)
+    #symlink /storage/emulated/legacy /sdcard
+    
+    # for compatibility with my twrp 3.0.2
+    symlink /storage/extSdCard /external_sd
 
 on init
     # Set permissions for persist partition
@@ -32,23 +45,24 @@ on init
     mkdir /efs 0771 system radio
     
 on fs
-    mount_all fstab.delos3g
+    mount_all /fstab.qcom.base
 
     # Keeping following partitions outside fstab file. As user may not have
     # these partition flashed on the device. Failure to mount any partition in fstab file
     # results in failure to launch late-start class.
 
-    wait /dev/block/platform/msm_sdcc.3/by-num/p22
-    check_fs /dev/block/platform/msm_sdcc.3/by-num/p22 ext4
-    mount ext4 /dev/block/platform/msm_sdcc.3/by-num/p22 /cache nosuid nodev barrier=1
+    wait /dev/block/mmcblk0p22
+    check_fs /dev/block/mmcblk0p22 ext4
+    mount ext4 /dev/block/mmcblk0p22 /cache nosuid nodev barrier=1
 
-    wait /dev/block/platform/msm_sdcc.3/by-num/p12
-    check_fs /dev/block/platform/msm_sdcc.3/by-num/p12 ext4
-    mount ext4 /dev/block/platform/msm_sdcc.3/by-num/p12 /persist nosuid nodev barrier=1
+    wait /dev/block/mmcblk0p12
+    check_fs /dev/block/mmcblk0p12 ext4
+    mount ext4 /dev/block/mmcblk0p12 /persist nosuid nodev barrier=1
 
-    wait /dev/block/platform/msm_sdcc.3/by-num/p16
-    check_fs /dev/block/platform/msm_sdcc.3/by-num/p16 ext4
-    mount ext4 /dev/block/platform/msm_sdcc.3/by-num/p16 /efs nosuid nodev barrier=1
+    wait /dev/block/mmcblk0p16
+    check_fs /dev/block/mmcblk0p16 ext4
+    mount ext4 /dev/block/mmcblk0p16 /efs nosuid nodev barrier=1
+    
     chown system radio /efs
     chmod 0771 /efs
     
@@ -63,15 +77,10 @@ on boot
     mount yaffs2 mtd@userdata /data nosuid nodev
     mount yaffs2 mtd@persist /persist nosuid nodev
     mount yaffs2 mtd@cache /cache nosuid nodev
-    mount yaffs2 mtd@persist /persist nosuid nodev
     
 on post-fs
     # For SysScope
     symlink /dev/block/mmcblk0p14 /dev/block/param
-
-    # ko files for exfat
-    insmod /system/lib/modules/exfat_core.ko
-    insmod /system/lib/modules/exfat_fs.ko
 
 # msm specific files that need to be created on /data
 on post-fs-data
@@ -84,8 +93,13 @@ on post-fs-data
     chown system system /persist
     chmod 0771 /persist
     
-on property:ro.boot.emmc=true
-    start rmt_storage
+    setprop vold.post_fs_data_done 1
+    # implicit
+    #start sdcard
+
+# always want emmc boot    
+#on property:ro.boot.emmc=true
+#    start rmt_storage
     
 # This will make sure that sdcard service starts as late_start.
 on nonencrypted
@@ -94,10 +108,18 @@ on nonencrypted
 on property:vold.decrypt=trigger_restart_framework
     setprop ro.fuse_sdcard ${persist.fuse_sdcard}
     
-service rmt_storage /system/bin/rmt_storage
-    class core
-    user root
-    disabled
-    
-service sdcard /system/bin/sdcard /data/media 1023 1023
+# create virtual SD card at /storage/sdcard0, based on the /data/media directory
+# daemon will drop to user/group system/media_rw after initializing
+# underlying files in /data/media will be created with user and group media_rw (1023)
+service sdcard /system/bin/logwrapper /system/bin/sdcard /data/media /mnt/shell/emulated 1023 1023
     class late_start
+    critical
+    # debug
+    onrestart /system/bin/ls -laR / > /data/rootfiles.txt
+    # implicit
+    #disabled
+
+service rmt_storage /system/bin/logwrapper /system/bin/rmt_storage
+    class main
+    critical
+    

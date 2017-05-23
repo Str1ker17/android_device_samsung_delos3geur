@@ -22,44 +22,55 @@ on post-fs-data
     mkdir /data/misc/location/mq 0770 gps gps
     mkdir /data/misc/location/xtwifi 0770 gps gps
 
-service wiperiface /system/bin/wiperiface
+service wiperiface /system/bin/logwrapper /system/bin/wiperiface
     class late_start
     user gps
     group gps qcom_oncrpc net_raw
     oneshot
 
-service gpsone_daemon /system/bin/gpsone_daemon
-    class late_start
-    user gps
-    group gps qcom_oncrpc inet net_raw
-    disabled
+# no such binary
+#service gpsone_daemon /system/bin/logwrapper /system/bin/gpsone_daemon
+#    class late_start
+#    user gps
+#    group gps qcom_oncrpc inet net_raw
+    # by init.qcom.sh, this service should start with late_start class on msm7627a
+    #disabled
 
-service quipc_igsn /system/bin/quipc_igsn
+service quipc_igsn /system/bin/logwrapper /system/bin/quipc_igsn
     class late_start
     user gps
     group inet gps
     disabled
 
-service quipc_main /system/bin/quipc_main
+service quipc_main /system/bin/logwrapper /system/bin/quipc_main
     class late_start
     user gps
     group gps net_admin wifi inet
     disabled
 
-service location_mq /system/bin/location-mq
+service location_mq /system/bin/logwrapper /system/bin/location-mq
     class late_start
     user gps
     group gps
     disabled
 
-service xtwifi_inet /system/bin/xtwifi-inet-agent
+service xtwifi_inet /system/bin/logwrapper /system/bin/xtwifi-inet-agent
     class late_start
     user gps
     group inet gps
     disabled
 
-service xtwifi_client /system/bin/xtwifi-client
+service xtwifi_client /system/bin/logwrapper /system/bin/xtwifi-client
     class late_start
     user gps
     group net_admin wifi inet gps
     disabled
+    
+# TODO: get rid of .sh scripts
+# executing /system/bin/griffon failed: No such file or directory
+#service griffon /system/bin/logwrapper /system/xbin/gps-start.sh
+#   class main
+#   socket gpsd39 dgram 0660 gps system inet
+#   socket gpsd16 dgram 0660 gps system inet
+#   user gps
+#   group gps system qcom_diag diag log inet

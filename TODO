@@ -7,3 +7,9 @@ W/gpu_dcvs(  212): <init_config:257>: failed to open config file, using defaults
 with cm10.1+Grace5921 init scripts
 I/mediaserver(  132): fatal error opening "/sys/power/wake_lock"
 I/mediaserver(  132): fatal error opening "/sys/android_power/acquire_partial_wake_lock"
+
+disable leds in lights HAL
+E/lights  (  480): write_int failed to open /sys/class/leds/red/brightness
+
+do something more useful with codec quirks than current workaround
+E/QCUtilClass(  158): Invalid quirk index

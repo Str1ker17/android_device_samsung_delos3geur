@@ -1,0 +1,27 @@
+import init.qcom.usb.rc
+
+on boot
+    #Set SUID bit for usbhub
+    chmod 755 /system/bin/usbhub
+    chmod 755 /system/bin/usbhub_init
+    
+    chmod 0444 /sys/devices/platform/msm_hsusb/gadget/usb_state
+        
+    #For bridgemgr daemon to inform the USB driver of the correct transport
+    chown radio radio /sys/class/android_usb/f_rmnet_smd_sdio/transport
+
+on post-fs-data
+    # MTP permission
+    chmod 0660 /dev/usb_mtp_gadget
+    chown system system /dev/usb_mtp_gadget
+    
+# Export GPIO56 for fusion targets to enable/disable hub
+service usbhub_init /system/bin/usbhub_init
+   class late_start
+   user root
+   disabled
+   oneshot
+
+on property:ro.board.platform=msm7630_fusion
+    start usbhub_init
+    

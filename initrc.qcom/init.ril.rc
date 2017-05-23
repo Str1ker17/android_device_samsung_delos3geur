@@ -1,0 +1,72 @@
+on boot
+    #Create QMUX deamon socket area
+    mkdir /dev/socket/qmux_radio 0770 radio radio
+    chmod 2770 /dev/socket/qmux_radio
+    mkdir /dev/socket/qmux_audio 0770 media audio
+    chmod 2770 /dev/socket/qmux_audio
+    mkdir /dev/socket/qmux_bluetooth 0770 bluetooth bluetooth
+    chmod 2770 /dev/socket/qmux_bluetooth
+    mkdir /dev/socket/qmux_gps 0770 gps gps
+    chmod 2770 /dev/socket/qmux_gps
+   
+    # move to build.prop
+    setprop ro.telephony.call_ring.multiple false
+    
+    # Permissions for DVFS
+    chown radio system /sys/power/cpufreq_table
+    chown radio system /sys/power/cpufreq_max_limit
+    chown radio system /sys/power/cpufreq_min_limit
+    chown radio system /sys/power/cpufreq_thermal_limit
+    chmod 0660 /sys/power/cpufreq_table
+    chmod 0660 /sys/power/cpufreq_max_limit
+    chmod 0660 /sys/power/cpufreq_min_limit
+    chmod 0660 /sys/power/cpufreq_thermal_limit
+    
+on post-fs
+    # move to build.prop
+    setprop rild.libpath "/system/lib/libril-qc-qmi-1.so"
+    setprop ro.multi.rild true
+    stop ril-daemon
+    start ril-daemon
+    start ril-daemon1
+    
+on post-fs-data
+    chmod 2770 /data/radio
+    # battery
+    chown system radio /sys/class/power_supply/battery/batt_reset_soc
+    # create directory for ril data
+    mkdir /data/misc/radio 0775 radio radio
+    chmod 0775 /data/misc/radio
+    mkdir /data/misc/radio/hatp 0775 radio system
+    
+on property:sys.radio.shutdown=true
+    exec /system/bin/cat /sys/devices/platform/rs300000a7.65536/force_sync
+    exec /system/bin/cat /sys/devices/platform/rs300100a7.65536/force_sync
+    
+on property:vold.decrypt=trigger_restart_framework
+    #start qcom-c_main-sh
+    # assume these values for build.prop from stock:
+    # ro.baseband = msm
+    # ro.multi.rild = true
+    # persist.dsds.enabled = true
+    # ro.use_data_netmgrd = true
+    start qmuxd
+    start ril-daemon1
+    start netmgrd
+   
+service cnd /system/bin/cnd
+    class late_start
+    socket cnd stream 666 root radio
+    
+service secril-daemon /system/bin/sec-ril
+    class main
+    user root
+    group radio cache inet misc audio sdcard_rw diag log
+    
+service ril-daemon1 /system/bin/rild -c 1
+    class main
+    socket rild1 stream 660 root radio
+    socket rild-debug1 stream 660 radio system
+    user root
+    disabled
+    group radio cache inet misc audio sdcard_rw qcom_oncrpc diag
