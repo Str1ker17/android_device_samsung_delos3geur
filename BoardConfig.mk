@@ -158,13 +158,13 @@ WIFI_DRIVER_MODULE_ARG := "suspend_mode=3 wow_mode=2 ath6kl_p2p=1 recovery_enabl
 WIFI_DRIVER_FW_PATH_PARAM := "/data/misc/wifi/fwpath"
 
 ##### TWEAKING GPS ##### thanks to weritos
-#QCOM_GPS_PATH := hardware/qcom/gps
+QCOM_GPS_PATH := hardware/qcom/gps
 # if true, use gps from device tree or somewhere else, NOT from hardware/qcom/gps
 #TARGET_PROVIDES_GPS_LOC_API := true
-#BOARD_USES_QCOM_LIBRPC := true
-#BOARD_USES_QCOM_GPS := true
-#BOARD_VENDOR_QCOM_GPS_LOC_API_AMSS_VERSION := 50001
-#BOARD_VENDOR_QCOM_GPS_LOC_API_HARDWARE := $(TARGET_BOARD_PLATFORM)
+BOARD_USES_QCOM_LIBRPC := true
+BOARD_USES_QCOM_GPS := true
+BOARD_VENDOR_QCOM_GPS_LOC_API_AMSS_VERSION := 50000
+BOARD_VENDOR_QCOM_GPS_LOC_API_HARDWARE := $(TARGET_BOARD_PLATFORM)
 
 ##### TWEAKING EMMC (INTERNAL STORAGE) #####
 # Change max. number of partitions.
@@ -203,11 +203,11 @@ DISABLE_DEXPREOPT := true
 
 ##### Other modules #####
 # Skip camera this time
-USE_CAMERA_STUB := true
+USE_CAMERA_STUB := false
 # Skip bt this time
 BOARD_HAVE_BLUETOOTH := false
 # Skip FM this time
-BOARD_HAVE_QCOM_FM := false
+BOARD_HAVE_QCOM_FM := true
 
 ##### FINALLY: IMAGES TO BUILD #####
 # What to build?

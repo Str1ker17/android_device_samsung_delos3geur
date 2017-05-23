@@ -13,37 +13,38 @@ If you want to build:
 After this, everything should be compilable. Tell me if not.
 
 What's working:
-- It boots, so graphics
+- Graphics
 - ADB
 - Internal storage
 - External storage
 - Sensors (proprietary)
 - CPU Hotplug (proprietary)
-- Lights HAL
 - Wi-Fi
 - Audio: speakerphone (but need more testing)
 - Audio: headset
+- Audio: microphone
 - MTP/PTP
 - Flashlight
 
 What's under development:
-- Audio: microphone (not working now)
 - Wi-Fi Direct (could not coexist with Wi-Fi)
 - GPS
+- Lights HAL (sensor keys are not responsible on touch with light)
 - Power HAL
 - Offline charging (LPM)
 - Hardware codecs
+- Camera
 
 What's not working:
 - RIL
 - Power Profile
 - Tethering (Wi-Fi nor USB)
-- Camera
 - Bluetooth
 
 Known issues:
 - CPU Governors could not be changed through builtin settings due to MPDecision proprietary service
+- Volume keys are disabled with screen off
 - Wi-Fi static library throws errors to logcat
-- thermald and mpdecision throws too much lines to logcat
+- thermald's ONCRPC throws too much lines to logcat
 - look at "TODO" file
 - and don't forget about "adb logcat -C"
