@@ -43,8 +43,8 @@ What's not working:
 
 Known issues:
 - CPU Governors could not be changed through builtin settings due to MPDecision proprietary service
-- Volume keys are disabled with screen off
 - Wi-Fi static library throws errors to logcat
+- libaudcal.so does not copy to obj/lib automatically while building
 - thermald's ONCRPC throws too much lines to logcat
 - look at "TODO" file
 - and don't forget about "adb logcat -C"

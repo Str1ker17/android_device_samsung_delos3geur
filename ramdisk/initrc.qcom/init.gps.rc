@@ -36,35 +36,40 @@ service wiperiface /system/bin/logwrapper /system/bin/wiperiface
     # by init.qcom.sh, this service should start with late_start class on msm7627a
     #disabled
 
-service quipc_igsn /system/bin/logwrapper /system/bin/quipc_igsn
-    class late_start
-    user gps
-    group inet gps
-    disabled
+# no such binary
+#service quipc_igsn /system/bin/logwrapper /system/bin/quipc_igsn
+#    class late_start
+#    user gps
+#    group inet gps
+#    disabled
 
-service quipc_main /system/bin/logwrapper /system/bin/quipc_main
-    class late_start
-    user gps
-    group gps net_admin wifi inet
-    disabled
+# no such binary
+#service quipc_main /system/bin/logwrapper /system/bin/quipc_main
+#    class late_start
+#    user gps
+#    group gps net_admin wifi inet
+#    disabled
 
-service location_mq /system/bin/logwrapper /system/bin/location-mq
-    class late_start
-    user gps
-    group gps
-    disabled
+# no such binary
+#service location_mq /system/bin/logwrapper /system/bin/location-mq
+#    class late_start
+#    user gps
+#    group gps
+#    disabled
 
-service xtwifi_inet /system/bin/logwrapper /system/bin/xtwifi-inet-agent
-    class late_start
-    user gps
-    group inet gps
-    disabled
+# no such binary
+#service xtwifi_inet /system/bin/logwrapper /system/bin/xtwifi-inet-agent
+#    class late_start
+#    user gps
+#    group inet gps
+#    disabled
 
-service xtwifi_client /system/bin/logwrapper /system/bin/xtwifi-client
-    class late_start
-    user gps
-    group net_admin wifi inet gps
-    disabled
+# no such binary
+#service xtwifi_client /system/bin/logwrapper /system/bin/xtwifi-client
+#    class late_start
+#    user gps
+#    group net_admin wifi inet gps
+#    disabled
     
 # TODO: get rid of .sh scripts
 # executing /system/bin/griffon failed: No such file or directory

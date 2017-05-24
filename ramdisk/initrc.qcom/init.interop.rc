@@ -18,9 +18,9 @@ on boot
     chown system system /dev/ttyGS3
 
 # this is supported on msm7627a
-#on property:ro.use_data_netmgrd=false
+on property:ro.use_data_netmgrd=false
     # netmgr not supported on specific target
-#    stop netmgrd
+    stop netmgrd
 
 service atfwd /system/bin/logwrapper /system/bin/ATFWD-daemon
     class late_start

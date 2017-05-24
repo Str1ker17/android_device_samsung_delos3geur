@@ -207,7 +207,7 @@ USE_CAMERA_STUB := false
 # Skip bt this time
 BOARD_HAVE_BLUETOOTH := false
 # Skip FM this time
-BOARD_HAVE_QCOM_FM := true
+BOARD_HAVE_QCOM_FM := false
 
 ##### FINALLY: IMAGES TO BUILD #####
 # What to build?
