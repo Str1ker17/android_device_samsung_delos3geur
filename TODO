@@ -13,3 +13,7 @@ E/lights  (  480): write_int failed to open /sys/class/leds/red/brightness
 
 do something more useful with codec quirks than current workaround
 E/QCUtilClass(  158): Invalid quirk index
+
+Sensor Service and/or HAL unstable: run 2GIS to see
+F/SensorService(  548): VALUE& android::KeyedVector<KEY, VALUE>::editValueFor(const KEY&) [with KEY = int, VALUE = android::SensorDevice::Info]: key not found
+F/libc    (  548): Fatal signal 11 (SIGSEGV) at 0xdeadbaad (code=1), thread 789 (Binder_5)

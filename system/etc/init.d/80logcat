@@ -4,4 +4,4 @@ cp /cache/logcat_cm10.1.txt /cache/last_logcat.txt
 cp /data/media/logcat_cm10.1.txt /data/media/last_logcat.txt
 
 logcat > /cache/logcat_cm10.1.txt &
-logcat > /data/media/last_logcat.txt &
+logcat > /data/media/logcat_cm10.1.txt &

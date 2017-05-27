@@ -16,23 +16,22 @@ What's working:
 - Graphics
 - ADB
 - Internal storage
-- External storage
-- Sensors (proprietary)
 - CPU Hotplug (proprietary)
-- Wi-Fi
 - Audio: speakerphone (but need more testing)
 - Audio: headset
 - Audio: microphone
 - MTP/PTP
-- Flashlight
+- Flashlight (if permissions to /sys/class/camera/rear/rear_flash are not lost)
 
 What's under development:
+- External storage (do not mount automatically with system start due to permissions)
+- Wi-Fi (disconnects Wi-Fi with screen off, throws errors to logcat)
 - Wi-Fi Direct (could not coexist with Wi-Fi)
+- Sensors (proprietary)
 - GPS
 - Lights HAL (sensor keys are not responsible on touch with light)
 - Power HAL
 - Offline charging (LPM)
-- Hardware codecs
 - Camera
 
 What's not working:
@@ -40,10 +39,11 @@ What's not working:
 - Power Profile
 - Tethering (Wi-Fi nor USB)
 - Bluetooth
+- Hardware codecs
 
 Known issues:
 - CPU Governors could not be changed through builtin settings due to MPDecision proprietary service
-- Wi-Fi static library throws errors to logcat
+- Volume keys may be disabled with screen off (permissions?)
 - libaudcal.so does not copy to obj/lib automatically while building
 - thermald's ONCRPC throws too much lines to logcat
 - look at "TODO" file

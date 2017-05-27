@@ -1,24 +1,26 @@
 on early-init
     symlink /efs /factory
     
+on init
     # See storage config details at http://source.android.com/tech/storage/
     # Internal (/data/media) storage
     # sdcard: cannot mount fuse filesystem (error 2)
-    mkdir /mnt/shell 0755 shell shell
+    mkdir /mnt/shell 0700 shell shell
     
     mkdir /mnt/shell/emulated 0700 shell shell
-    mkdir /storage/emulated 0555 root root
-    mkdir /storage/sdcard0 0755 shell media_rw
+    mkdir /storage/emulated 0550 system system
+    #mkdir /storage/sdcard0 0755 shell media_rw
 
     # External storages
     # attempt to fix
-    mkdir /mnt/media_rw 0755 root media_rw
+    #mkdir /mnt/media_rw 0755 system media_rw
     
-    mkdir /mnt/media_rw/extSdCard 0700 media_rw media_rw
-    mkdir /storage/extSdCard 0700 root root
+    # temp hack
+    #mkdir /mnt/media_rw/extSdCard 0700 media_rw media_rw
+    mkdir /storage/extSdCard 0000 system system
     
-    mkdir /mnt/media_rw/usbdisk 0700 media_rw media_rw
-    mkdir /storage/usbdisk 0700 root root
+    #mkdir /mnt/media_rw/usbdisk 0700 media_rw media_rw
+    #mkdir /storage/usbdisk 0700 root root
 
     # Prepare env vars
     export EXTERNAL_STORAGE /storage/emulated/0
@@ -26,24 +28,27 @@ on early-init
     export EMULATED_STORAGE_TARGET /storage/emulated
     export SECONDARY_STORAGE /storage/extSdCard
 
-    symlink /mnt/shell/emulated/0 /storage/emulated/legacy
+    symlink /mnt/shell/emulated /storage/emulated/legacy
     symlink /mnt/shell/emulated/0 /storage/emulated/0
     # the second line is more clear to understand
-    #symlink /storage/emulated/legacy /storage/sdcard0
     symlink /mnt/shell/emulated/0 /storage/sdcard0
     
-    symlink /storage/emulated/legacy /mnt/sdcard
-    symlink /storage/extSdCard /mnt/extSdCard
-    symlink /storage/usbdisk /mnt/usbdisk
+    #symlink /storage/emulated/legacy /mnt/sdcard
+    
+    #symlink /storage/extSdCard /mnt/media_rw/extSdCard
+    #symlink /storage/extSdCard /mnt/extSdCard
+    #symlink /storage/usbdisk /mnt/usbdisk
     
     # Support legacy paths
-    symlink /mnt/shell/emulated /storage/emulated
-    #symlink /storage/emulated/legacy /sdcard
+    #symlink /mnt/shell/emulated /storage/emulated
+    symlink /mnt/shell/emulated/0 /sdcard
     
-    # for compatibility with my twrp 3.0.2
+    # for replacibility with my twrp 3.0.2
     symlink /storage/extSdCard /external_sd
+    
+    # temp hack
+    chmod 0777 /storage/extSdCard
 
-on init
     # Set permissions for persist partition
     mkdir /persist 0771 system system
     mkdir /preload 0771 system system
@@ -120,7 +125,7 @@ service sdcard /system/bin/logwrapper /system/bin/sdcard /data/media /mnt/shell/
     class late_start
     critical
     # debug
-    onrestart /system/bin/ls -laR / > /data/rootfiles.txt
+    onrestart exec -- /system/bin/ls -laR / > /data/rootfiles.txt
     # implicit
     #disabled
 

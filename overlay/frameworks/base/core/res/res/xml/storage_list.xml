@@ -33,16 +33,18 @@
 -->
 
 <StorageList xmlns:android="http://schemas.android.com/apk/res/android">
-    <storage android:mountPoint="/storage/sdcard0"
+    <storage android:mountPoint="/storage/emulated/0"
                  android:storageDescription="@string/storage_internal"
                  android:primary="true"
                  android:removable="false"
                  android:emulated="true"
+                 android:mtpReserve="128"
                  android:allowMassStorage="false" />
 
     <storage android:mountPoint="/storage/extSdCard"
                  android:storageDescription="@string/storage_sd_card"
                  android:primary="false"
                  android:removable="true"
-                 android:allowMassStorage="true" />
+                 android:emulated="false"
+                 android:allowMassStorage="false" />
 </StorageList>
