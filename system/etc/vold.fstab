@@ -43,4 +43,4 @@
 #dev_mount sdcard0 /storage/sdcard0 24 /devices/platform/dw_mmc/mmc_host/mmc0/mmc0 nonremovable,encryptable 
 
 # external sdcard
-dev_mount sdcard /storage/extSdCard auto /devices/platform/msm_sdcc.1/mmc_host/mmc1/
+dev_mount sdcard1 /storage/extSdCard auto /devices/platform/msm_sdcc.1/mmc_host/mmc1/ rw,dirsync,nosuid,nodev,noexec,noatime,nodiratime,uid=1000,gid=1023,fmask=0002,dmask=0002,allow_utime=0020,codepage=cp437,iocharset=iso8859-1,shortname=mixed,utf8,errors=remount-ro

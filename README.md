@@ -27,17 +27,17 @@ What's under development:
 - External storage (do not mount automatically with system start due to permissions)
 - Wi-Fi (disconnects Wi-Fi with screen off, throws errors to logcat)
 - Wi-Fi Direct (could not coexist with Wi-Fi)
-- Sensors (proprietary)
-- GPS
+- Sensors (proprietary) (need to fix libbinder)
 - Lights HAL (sensor keys are not responsible on touch with light)
 - Power HAL
 - Offline charging (LPM)
 - Camera
+- Power Profile
+- Tethering (Wi-Fi, USB)
 
 What's not working:
+- GPS
 - RIL
-- Power Profile
-- Tethering (Wi-Fi nor USB)
 - Bluetooth
 - Hardware codecs
 
