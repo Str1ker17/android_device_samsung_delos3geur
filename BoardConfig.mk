@@ -78,7 +78,7 @@ ARCH_ARM_HAVE_NEON := true
 # this has no effect on display-legacy, even no directive with such name in sources.
 #TARGET_GRALLOC_USES_ASHMEM := true
 # use stock lights.msm7x27a
-TARGET_PROVIDES_LIBLIGHT := true
+TARGET_PROVIDES_LIBLIGHTS := true
 
 # EGL config. all graphics built on top of the EGL, so without this system will become unbootable.
 BOARD_EGL_CFG := device/samsung/delos3geur/egl.cfg
@@ -115,7 +115,9 @@ TARGET_HAS_QACT := true
 
 ##### TWEAKING MEDIA #####
 TARGET_QCOM_MEDIA_VARIANT := legacy
+# use libmmparse.so instead of some new crap
 COMMON_GLOBAL_CFLAGS += -DQCOM_LEGACY_MMPARSE
+
 COMMON_GLOBAL_CFLAGS += -DQCOM_LEGACY_OMX
 ARCH_ARM_HAVE_ARMV7A := true
 
@@ -193,6 +195,11 @@ BOARD_WANTS_EMMC_BOOT := true
 # Use this flag if the board has a ext4 partition larger than 2gb
 BOARD_HAS_LARGE_FILESYSTEM := true
 
+##### BLUETOOTH #####
+# Don't skip bt this time
+BOARD_HAVE_BLUETOOTH := true
+BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR := device/samsung/delos3geur/bluetooth
+
 ##### MISCELLANEOUS #####
 # Wat?
 BOARD_HAS_NO_SELECT_BUTTON := true
@@ -204,8 +211,6 @@ DISABLE_DEXPREOPT := true
 ##### Other modules #####
 # Skip camera this time
 USE_CAMERA_STUB := false
-# Skip bt this time
-BOARD_HAVE_BLUETOOTH := false
 # Skip FM this time
 BOARD_HAVE_QCOM_FM := false
 

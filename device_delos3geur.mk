@@ -67,6 +67,7 @@ PRODUCT_PACKAGES += gps.msm7x27a
 PRODUCT_PACKAGES += power.msm7x27a
 #PRODUCT_PACKAGES += libnetutils # no need
 #PRODUCT_PACKAGES += libnetmgr
+PRODUCT_PACKAGES += charger
 
 # Java applications
 PRODUCT_PACKAGES +=	Torch
@@ -80,7 +81,8 @@ PRODUCT_DEFAULT_PROPERTY_OVERRIDES += ro.debuggable=1
 #ro.allow.mock.location=0
 # this seems to be compatible with CM adbd
 PRODUCT_DEFAULT_PROPERTY_OVERRIDES += service.adb.root=1
-PRODUCT_DEFAULT_PROPERTY_OVERRIDES += persist.sys.usb.config=mtp,adb
+# ",adb" is automatically appended on eng builds
+PRODUCT_DEFAULT_PROPERTY_OVERRIDES += persist.sys.usb.config=mtp
 # is this obsolete?
 PRODUCT_DEFAULT_PROPERTY_OVERRIDES += persist.service.adb.root=1
 # Grace5921 said that this is compatible with 4.2+. Believe him.

@@ -16,6 +16,7 @@ What's working:
 - Graphics
 - ADB
 - Internal storage
+- External storage
 - CPU Hotplug (proprietary)
 - Audio: speakerphone (but need more testing)
 - Audio: headset
@@ -24,19 +25,18 @@ What's working:
 - Flashlight (if permissions to /sys/class/camera/rear/rear_flash are not lost)
 
 What's under development:
-- External storage (do not mount automatically with system start due to permissions)
 - Wi-Fi (disconnects Wi-Fi with screen off, throws errors to logcat)
 - Wi-Fi Direct (could not coexist with Wi-Fi)
 - Sensors (proprietary) (need to fix libbinder)
-- Lights HAL (sensor keys are not responsible on touch with light)
+- Lights HAL (with stock HAL the light is everywhere)
 - Power HAL
-- Offline charging (LPM)
-- Camera
-- Power Profile
+- Offline charging (LPM) (testing now)
+- Camera (photo works OK, video don't due to libbinder)
+- Power Profile (testing now)
 - Tethering (Wi-Fi, USB)
+- GPS (now stock libs, behave weird)
 
 What's not working:
-- GPS
 - RIL
 - Bluetooth
 - Hardware codecs

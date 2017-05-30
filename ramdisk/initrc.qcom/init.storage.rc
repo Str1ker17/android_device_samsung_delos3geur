@@ -53,6 +53,10 @@ on init
     mkdir /persist 0771 system system
     mkdir /preload 0771 system system
     mkdir /efs 0771 system radio
+
+# workaround for BOARD_WANTS_EMMC_BOOT := true
+on emmc-fs
+    trigger fs
     
 on fs
     mount_all /fstab.qcom.base
