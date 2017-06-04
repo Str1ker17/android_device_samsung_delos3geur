@@ -44,6 +44,7 @@ What's not working:
 Known issues:
 - CPU Governors could not be changed through builtin settings due to MPDecision proprietary service
 - Volume keys may be disabled with screen off (permissions?)
+- Supported lights: */sys/class/leds/lcd-backlight/brightness* */sys/class/sec/sec_touchkey/brightness*
 - libaudcal.so does not copy to obj/lib automatically while building
 - thermald's ONCRPC throws too much lines to logcat
 - look at "TODO" file

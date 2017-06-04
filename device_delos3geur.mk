@@ -18,8 +18,11 @@ else
 	LOCAL_KERNEL := $(TARGET_PREBUILT_KERNEL)
 endif
 
-PRODUCT_COPY_FILES += \
-    $(LOCAL_KERNEL):kernel
+#PRODUCT_COPY_FILES += \
+#    $(LOCAL_KERNEL):kernel
+
+# Maybe someday this will be required enough
+#TARGET_BUILD_TYPE := debug
 	
 # list from 4.4.4 by weritos
 PRODUCT_COPY_FILES += frameworks/native/data/etc/handheld_core_hardware.xml:system/etc/permissions/handheld_core_hardware.xml
@@ -34,7 +37,7 @@ PRODUCT_COPY_FILES += frameworks/native/data/etc/android.hardware.telephony.cdma
 PRODUCT_COPY_FILES += frameworks/native/data/etc/android.software.sip.voip.xml:system/etc/permissions/android.software.sip.voip.xml
 PRODUCT_COPY_FILES += frameworks/native/data/etc/android.hardware.sensor.proximity.xml:system/etc/permissions/android.hardware.sensor.proximity.xml
 PRODUCT_COPY_FILES += frameworks/native/data/etc/android.hardware.sensor.gyroscope.xml:system/etc/permissions/android.hardware.sensor.gyroscope.xml
-#PRODUCT_COPY_FILES += frameworks/native/data/etc/android.hardware.usb.accessory.xml:system/etc/permissions/android.hardware.usb.accessory.xml
+PRODUCT_COPY_FILES += frameworks/native/data/etc/android.hardware.usb.accessory.xml:system/etc/permissions/android.hardware.usb.accessory.xml
 #PRODUCT_COPY_FILES += frameworks/native/data/etc/android.hardware.usb.host.xml:system/etc/permissions/android.hardware.usb.host.xml
 
 # proprietary files
@@ -42,8 +45,7 @@ PRODUCT_COPY_FILES += $(call find-copy-subdir-files,*,$(LOCAL_PATH)/system,syste
 
 # Display
 # copybit, gralloc, hwcomposer, lights: hardware/qcom/display
-# libmm-omxcore, libOmxCore: hardware/qcom/media
-# build HALs ONLY
+# build HALs ONLY, there's no need to enumerate all shared libs there
 PRODUCT_PACKAGES += gralloc.msm7x27a
 PRODUCT_PACKAGES += copybit.msm7x27a
 PRODUCT_PACKAGES += lights.msm7x27a
@@ -65,14 +67,18 @@ PRODUCT_PACKAGES += gps.msm7x27a
 # Misc
 #PRODUCT_PACKAGES += libhealthd.msm7x27a
 PRODUCT_PACKAGES += power.msm7x27a
-#PRODUCT_PACKAGES += libnetutils # no need
-#PRODUCT_PACKAGES += libnetmgr
 PRODUCT_PACKAGES += charger
+PRODUCT_PACKAGES += rild2
+# libmm-omxcore, libOmxCore: hardware/qcom/media
 
 # Java applications
 PRODUCT_PACKAGES +=	Torch
 PRODUCT_PACKAGES +=	CMUpdater
-	
+
+# https://source.android.com/compatibility/cts/setup
+#ro.product.first_api_level indicates the first api level, device has been commercially launched on.
+PRODUCT_PROPERTY_OVERRIDES += ro.product.first_api_level=16
+
 # files for boot.img
 PRODUCT_COPY_FILES += $(call find-copy-subdir-files,*,$(LOCAL_PATH)/ramdisk,root)
 PRODUCT_DEFAULT_PROPERTY_OVERRIDES += ro.adb.secure=0
@@ -92,6 +98,7 @@ TARGET_OTA_ASSERT_DEVICE := delos3geur,i8552,gt-i8552,GT-I8552
 # Actually build
 $(call inherit-product, build/target/product/full.mk)
 
+PRODUCT_BUILD_PROP_OVERRIDES += BUILD_ID="cm_delos3geur-eng 4.2.2 JDQ39E \"vivienne_nelson\" 0532deaeb4 test-keys"
 PRODUCT_BUILD_PROP_OVERRIDES += BUILD_UTC_DATE=0
 PRODUCT_NAME := full_delos3geur
 PRODUCT_DEVICE := delos3geur

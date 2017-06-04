@@ -37,6 +37,11 @@ TARGET_CORTEX_CACHE_LINE_32 := true
 ARCH_ARM_HAVE_32_BYTE_CACHE_LINES := true
 TARGET_USE_QCOM_BIONIC_OPTIMIZATION := true
 
+# somewhat optimization? these options are both supported on i8552,
+# but weritos said that these flags are excess. 
+#ARCH_ARM_HAVE_NEON := true
+#ARCH_ARM_HAVE_ARMV7A := true
+
 # HAL <=> system compatibility
 TARGET_BOOTLOADER_BOARD_NAME := msm8625
 TARGET_BOARD_PLATFORM := msm7x27a
@@ -73,8 +78,6 @@ TARGET_QCOM_DISPLAY_VARIANT := legacy
 TARGET_USES_ION := true
 # i8552 does not support H/W vsync
 TARGET_NO_HW_VSYNC := true
-# somewhat optimization?
-ARCH_ARM_HAVE_NEON := true
 # this has no effect on display-legacy, even no directive with such name in sources.
 #TARGET_GRALLOC_USES_ASHMEM := true
 # use stock lights.msm7x27a
@@ -119,24 +122,32 @@ TARGET_QCOM_MEDIA_VARIANT := legacy
 COMMON_GLOBAL_CFLAGS += -DQCOM_LEGACY_MMPARSE
 
 COMMON_GLOBAL_CFLAGS += -DQCOM_LEGACY_OMX
-ARCH_ARM_HAVE_ARMV7A := true
 
 TARGET_BOARD_PLATFORM_GPU := qcom-adreno203
 BOARD_USES_ADRENO_200 := true
 
 BOARD_USE_LEGACY_UI := true
 
-# Samsung has weird framebuffer
+# Samsung has weird framebuffer, so prevent initlogo stage in /init binary
 TARGET_NO_INITLOGO := true
 DEVICE_RESOLUTION := 480x800
 #BOARD_KERNEL_BASE := 0x00200000
 
-# tweaking power
+##### TWEAKING POWER #####
 #TARGET_POWERHAL_VARIANT :=
+# for Samsung GT-I8552; TODO: move to BoardConfig
+#LOCAL_CFLAGS += -DBOARD_CHARGING_CMDLINE_NAME=\"androidboot.bootchg\"
+#LOCAL_CFLAGS += -DBOARD_CHARGING_CMDLINE_VALUE=\"true\"
+# TODO: add options for LPM boot: kernel boot properties
+# BOARD_LPM_BOOT_ARGUMENT_NAME
+# BOARD_LPM_BOOT_ARGUMENT_VALUE
+# or sysfs-path
+# BOARD_CHARGING_MODE_BOOTING_LPM
 
-# tweaking RIL by weritos
+##### TWEAKING RIL ##### thanks to weritos
 # if true, use libril from device tree or somewhere else, NOT from hardware/ril
-BOARD_PROVIDES_LIBRIL := true
+#BOARD_PROVIDES_LIBRIL := true
+TARGET_PROVIDES_LIBRIL := true
 #BOARD_RIL_CLASS := ../../../device/samsung/delos3geur/ril/java_ril
 COMMON_GLOBAL_CFLAGS += -DRIL_SUPPORTS_SEEK
 COMMON_GLOBAL_CFLAGS += -DRIL_VARIANT_LEGACY
@@ -185,8 +196,8 @@ BOARD_DATA_FILESYSTEM_OPTIONS := rw
 
 BOARD_FLASH_BLOCK_SIZE := 131072
 # Remember that we can't boot i8552 without /system/bin/rmt_storage
-# this directive sets ro.boot.emmc=true in properties.
-# stock init script checks for this to decide whether to start rmt_storage, but we can avoid check and start anyway, in future.
+# this directive sets ro.boot.emmc=true in properties, also /init binary will go to 'on emmc-fs' instead of 'on fs'.
+# stock init script checks for this to decide whether to start rmt_storage, but we avoid check and start anyway.
 BOARD_WANTS_EMMC_BOOT := true
 
 # this seems to be standing for USB Mass Storage virtual device symbolic link. But that's not exactly.

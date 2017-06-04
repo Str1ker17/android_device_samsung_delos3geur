@@ -3,6 +3,9 @@ on early-init
     start ueventd
 
 on init
+    sysclktz 0
+    loglevel 5
+    
     export PATH /sbin:/vendor/bin:/system/sbin:/system/bin:/system/xbin
     export LD_LIBRARY_PATH /vendor/lib:/system/lib
     export ANDROID_ROOT /system
@@ -39,7 +42,11 @@ on init
     domainname localdomain
 
     class_start main
+    class_start charger
     start mpdecision
+    
+on charger
+    class_start charger
 
 # started on early init
 service ueventd /sbin/ueventd
@@ -54,6 +61,9 @@ service console /system/bin/sh
     user shell
     group log
     
+service charger /charger
+    class charger
+    
 service playlpm /system/bin/playlpm
     class main
     user root
@@ -65,6 +75,7 @@ service lpmkey /system/bin/lpmkey
     oneshot
     
 service mpdecision /system/bin/mpdecision --no_sleep --avg_comp
+    class main
     user root
     disabled
 

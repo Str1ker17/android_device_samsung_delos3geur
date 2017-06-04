@@ -2,6 +2,7 @@
 
 # XXX using libutils for simulator build only...
 #
+ifneq ($(BOARD_PROVIDES_RIL_REFERENCE),true)
 LOCAL_PATH:= $(call my-dir)
 include $(CLEAR_VARS)
 
@@ -12,20 +13,15 @@ LOCAL_SRC_FILES:= \
     at_tok.c
 
 LOCAL_SHARED_LIBRARIES := \
-    liblog libcutils libutils libril librilutils
+    libcutils libutils libril
 
 # for asprinf
 LOCAL_CFLAGS := -D_GNU_SOURCE
 
 LOCAL_C_INCLUDES := $(KERNEL_HEADERS)
 
-#USE HCRADIO
-ifeq ($(BOARD_USES_HC_RADIO),true) 
-LOCAL_CFLAGS += -DHCRADIO
-endif
-
 ifeq ($(TARGET_DEVICE),sooner)
-  LOCAL_CFLAGS += -DOMAP_CSMI_POWER_CONTROL -DUSE_TI_COMMANDS
+  LOCAL_CFLAGS += -DUSE_TI_COMMANDS
 endif
 
 ifeq ($(TARGET_DEVICE),surf)
@@ -50,4 +46,5 @@ else
       libril
   LOCAL_MODULE:= reference-ril
   include $(BUILD_EXECUTABLE)
+endif
 endif

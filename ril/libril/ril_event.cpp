@@ -15,7 +15,8 @@
 ** limitations under the License.
 */
 
-#define LOG_TAG "RILC"
+extern char g_log_tag[12];
+#define LOG_TAG ((const char *)g_log_tag)
 
 #include <stdlib.h>
 #include <unistd.h>
@@ -33,6 +34,8 @@ static pthread_mutex_t listMutex;
 #define MUTEX_RELEASE() pthread_mutex_unlock(&listMutex)
 #define MUTEX_INIT() pthread_mutex_init(&listMutex, NULL)
 #define MUTEX_DESTROY() pthread_mutex_destroy(&listMutex)
+
+#include <telephony/ril_log_rev.h>
 
 #ifndef timeradd
 #define timeradd(tvp, uvp, vvp)						\
@@ -351,6 +354,7 @@ void ril_event_loop()
     struct timeval * ptv;
 
 
+    ALOGE("in ril_event_loop");
     for (;;) {
 
         // make local copy of read fd_set

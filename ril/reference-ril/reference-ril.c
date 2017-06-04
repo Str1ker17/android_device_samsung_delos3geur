@@ -1,8 +1,10 @@
 /* //device/system/reference-ril/reference-ril.c
 **
-** Copyright (c) 2012-2013, The Linux Foundation. All rights reserved.
-** Not a Contribution
-** Copyright 2006 The Android Open Source Project
+** Copyright 2006, The Android Open Source Project
+** Copyright (c) 2012, The Linux Foundation. All rights reserved.
+**
+** Not a Contribution, Apache license notifications and license are retained
+** for attribution purposes only.
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -18,7 +20,6 @@
 */
 
 #include <telephony/ril_cdma_sms.h>
-#include <telephony/librilutils.h>
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
@@ -38,11 +39,15 @@
 #include <termios.h>
 #include <sys/system_properties.h>
 
-#include "ril.h"
+#include <telephony/ril.h>
 #include "hardware/qemu_pipe.h"
+#include <cutils/properties.h>
+
 
 #define LOG_TAG "RIL"
 #include <utils/Log.h>
+
+#include <telephony/ril_log_rev.h>
 
 #define MAX_AT_RESPONSE 0x1000
 
@@ -201,7 +206,6 @@ static pthread_cond_t s_state_cond = PTHREAD_COND_INITIALIZER;
 static int s_port = -1;
 static const char * s_device_path = NULL;
 static int          s_device_socket = 0;
-const char * ril_inst_id = NULL;
 
 /* trigger change to this with s_state_cond */
 static int s_closed = 0;
@@ -234,12 +238,6 @@ static int s_repollCallsCount = 0;
 // Should we expect a call to be answered in the next CLCC?
 static int s_expectAnswer = 0;
 #endif /* WORKAROUND_ERRONEOUS_ANSWER */
-
-static int s_cell_info_rate_ms = INT_MAX;
-static int s_mcc = 0;
-static int s_mnc = 0;
-static int s_lac = 0;
-static int s_cid = 0;
 
 static void pollSIMState (void *param);
 static void setRadioState(RIL_RadioState newState);
@@ -437,9 +435,7 @@ static void requestOrSendDataCallList(RIL_Token *t)
     int i;
     for (i = 0; i < n; i++) {
         responses[i].status = -1;
-#ifndef HCRADIO
         responses[i].suggestedRetryTime = -1;
-#endif
         responses[i].cid = -1;
         responses[i].active = -1;
         responses[i].type = "";
@@ -766,35 +762,37 @@ error:
     at_response_free(p_response);
 }
 
+#ifdef RIL_VARIANT_LEGACY
 static void setUiccSubscription(int request, void *data, size_t datalen, RIL_Token t)
 {
     RIL_SelectUiccSub *uiccSubscrInfo;
     uiccSubscrInfo = (RIL_SelectUiccSub *)data;
     int response = 0;
 
-    ALOGD("setUiccSubscription() RILD=%s instance.", ril_inst_id);
+    RLOGD("setUiccSubscription()");
     // TODO: DSDS: Need to implement this.
     // workaround: send success for now.
     RIL_onRequestComplete(t, RIL_E_SUCCESS, NULL, 0);
 
     if (uiccSubscrInfo->act_status == RIL_UICC_SUBSCRIPTION_ACTIVATE) {
-        ALOGD("setUiccSubscription() : Activate Request: sending SUBSCRIPTION_STATUS_CHANGED");
+        RLOGD("setUiccSubscription() : Activate Request: sending SUBSCRIPTION_STATUS_CHANGED");
         response = 1; // ACTIVATED
         RIL_onUnsolicitedResponse (
             RIL_UNSOL_UICC_SUBSCRIPTION_STATUS_CHANGED,
             &response, sizeof(response));
     } else {
-        ALOGD("setUiccSubscriptionSource() : Deactivate Request");
+        RLOGD("setUiccSubscriptionSource() : Deactivate Request");
     }
 }
 
 static void setDataSubscription(int request, void *data, size_t datalen, RIL_Token t)
 {
-    ALOGD("setDataSubscriptionSource()") ;
+    RLOGD("setDataSubscriptionSource()") ;
     // TODO: DSDS: Need to implement this.
     // workaround: send success for now.
     RIL_onRequestComplete(t, RIL_E_SUCCESS, NULL, 0);
 }
+#endif
 
 static void requestDial(void *data, size_t datalen, RIL_Token t)
 {
@@ -1311,8 +1309,6 @@ static int parseRegistrationState(char *str, int *type, int *items, int **respon
         default:
             goto error;
     }
-    s_lac = resp[1];
-    s_cid = resp[2];
     if (response)
         *response = resp;
     if (items)
@@ -1495,12 +1491,6 @@ static void requestOperator(void *data, size_t datalen, RIL_Token t)
 
         err = at_tok_nextstr(&line, &(response[i]));
         if (err < 0) goto error;
-        // Simple assumption that mcc and mnc are 3 digits each
-        if (strlen(response[i]) == 6) {
-            if (sscanf(response[i], "%3d%3d", &s_mcc, &s_mnc) != 2) {
-                ALOGE("requestOperator expected mccmnc to be 6 decimal digits");
-            }
-        }
     }
 
     if (i != 3) {
@@ -1602,7 +1592,7 @@ error2:
     RIL_onRequestComplete(t, RIL_E_SMS_SEND_FAIL_RETRY, &response, sizeof(response));
     at_response_free(p_response);
     return;
-    }
+}
 
 static void requestImsSendSMS(void *data, size_t datalen, RIL_Token t)
 {
@@ -1974,45 +1964,159 @@ static int techFromModemType(int mdmtype)
     return ret;
 }
 
-static void requestGetCellInfoList(void *data, size_t datalen, RIL_Token t)
+static void  requestSetupQos(void*  data, size_t  datalen, RIL_Token  t)
 {
-    uint64_t curTime = ril_nano_time();
-    RIL_CellInfo ci[1] =
-    {
-        { // ci[0]
-            1, // cellInfoType
-            1, // registered
-            curTime - 1000, // Fake some time in the past
-            { // union CellInfo
-                {  // RIL_CellInfoGsm gsm
-                    {  // gsm.cellIdneityGsm
-                        s_mcc, // mcc
-                        s_mnc, // mnc
-                        s_lac, // lac
-                        s_cid, // cid
-                        0  // psc
-                    },
-                    {  // gsm.signalStrengthGsm
-                        10, // signalStrength
-                        0  // bitErrorRate
-                    }
-                }
-            }
-        }
-    };
+    const char* in_callId = ((const char **)data)[0];
+    const char* in_qosSpec = ((const char **)data)[1];
 
-    RIL_onRequestComplete(t, RIL_E_SUCCESS, ci, sizeof(ci));
+    const int RESPONSE1_PARAM_NUM = 2;
+    // string length of the largest qosid
+    const int MAX_QOSID_STRLEN = 5;
+    char qosIdStr[MAX_QOSID_STRLEN];
+
+    const char* p_buffer1[RESPONSE1_PARAM_NUM];
+    int buffer_size1 = RESPONSE1_PARAM_NUM*sizeof(char*);
+    const char* out_code = "0";
+    // Static variable that keeps track of the QoS IDs thats given out. For
+    // each QoS request QoS ID is incremented.
+    static int out_qosId = 0;
+
+    p_buffer1[0] = out_code;
+    // increment out_qosId
+    out_qosId++;
+    snprintf(qosIdStr, MAX_QOSID_STRLEN, "%d", out_qosId);
+
+    p_buffer1[1] = qosIdStr;
+
+    ALOGE("requestSetupQos:RIL_onRequestComplete len: %d", buffer_size1);
+    RIL_onRequestComplete(t, RIL_E_SUCCESS, p_buffer1, buffer_size1);
+
+
+    const int RESPONSE2_PARAM_NUM = 2;
+    const char* p_buffer2[RESPONSE2_PARAM_NUM];
+    int buffer_size2 = RESPONSE2_PARAM_NUM*sizeof(char*);
+
+    // Copy the same qos Id for follow up QoS Ind
+    p_buffer2[0] = qosIdStr;
+    p_buffer2[1] = "0"; // QosInd state as ACTIVATED
+
+    ALOGE("requestSetupQos:RIL_onUnsolicitedResponse");
+    RIL_onUnsolicitedResponse ( RIL_UNSOL_QOS_STATE_CHANGED_IND,
+            p_buffer2, buffer_size2);
 }
 
-
-static void requestSetCellInfoListRate(void *data, size_t datalen, RIL_Token t)
+static void  requestReleaseQos(void*  data, size_t  datalen, RIL_Token  t)
 {
-    // For now we'll save the rate but no RIL_UNSOL_CELL_INFO_LIST messages
-    // will be sent.
-    assert (datalen == sizeof(int));
-    s_cell_info_rate_ms = ((int *)data)[0];
+    const char* in_qosId = ((const char **)data)[0];
+    const int RESPONSE1_PARAM_NUM =1;
+    const char* p_buffer1[RESPONSE1_PARAM_NUM];
+    int buffer_size1 = RESPONSE1_PARAM_NUM*sizeof(char*);
+    const char* out_code = "1";
+    p_buffer1[0] = out_code;
 
-    RIL_onRequestComplete(t, RIL_E_SUCCESS, NULL, 0);
+    ALOGE("requestReleaseQos:RIL_onRequestComplete");
+    RIL_onRequestComplete(t, RIL_E_SUCCESS, p_buffer1, buffer_size1);
+
+    const int RESPONSE2_PARAM_NUM = 2;
+    const char* p_buffer2[RESPONSE2_PARAM_NUM];
+    int buffer_size2 = RESPONSE2_PARAM_NUM*sizeof(char*);
+
+    p_buffer2[0] = in_qosId;
+    p_buffer2[1] = "2"; // User Release
+    ALOGE("requestRelease:RIL_onUnsolicitedResponse");
+    RIL_onUnsolicitedResponse ( RIL_UNSOL_QOS_STATE_CHANGED_IND,
+            p_buffer2, buffer_size2);
+}
+
+static void  requestModifyQos(void*  data, size_t  datalen, RIL_Token  t)
+{
+    const char* in_qosId = ((const char **)data)[0];
+    const char* in_qosSpec = ((const char **)data)[1];
+
+    const int RESPONSE1_PARAM_NUM = 1;
+    const char* p_buffer1[RESPONSE1_PARAM_NUM];
+    int buffer_size1 = RESPONSE1_PARAM_NUM*sizeof(char*);
+    const char* out_code = "0";
+    p_buffer1[0] = out_code;
+
+    ALOGE("requestModifyQos:RIL_onRequestComplete");
+    RIL_onRequestComplete(t, RIL_E_SUCCESS, p_buffer1, buffer_size1);
+
+    const int RESPONSE2_PARAM_NUM = 2;
+    const char* p_buffer2[RESPONSE2_PARAM_NUM];
+    int buffer_size2 = RESPONSE2_PARAM_NUM*sizeof(char*);
+
+    p_buffer2[0] = in_qosId;
+    p_buffer2[1] = "5"; //Modified
+    ALOGE("requestModify:RIL_onUnsolicitedResponse");
+    RIL_onUnsolicitedResponse ( RIL_UNSOL_QOS_STATE_CHANGED_IND,
+            p_buffer2, buffer_size2);
+}
+
+static void  requestSuspendQos(void*  data, size_t  datalen, RIL_Token  t)
+{
+    const char* in_qosId = ((const char **)data)[0];
+    const int RESPONSE1_PARAM_NUM = 1;
+    const char* p_buffer1[RESPONSE1_PARAM_NUM];
+    int buffer_size1 = RESPONSE1_PARAM_NUM*sizeof(char*);
+    const char* out_code = "0";
+    p_buffer1[0] = out_code;
+
+    ALOGE("requestSuspendQos:RIL_onRequestComplete len: %d", buffer_size1);
+    RIL_onRequestComplete(t, RIL_E_SUCCESS, p_buffer1, buffer_size1);
+
+    const int RESPONSE2_PARAM_NUM = 2;
+    const char* p_buffer2[RESPONSE2_PARAM_NUM];
+    int buffer_size2 = RESPONSE2_PARAM_NUM*sizeof(char*);
+
+    p_buffer2[0] = in_qosId;
+    p_buffer2[1] = "4"; // Suspended
+    ALOGE("requestSuspendQos:RIL_onUnsolicitedResponse");
+    RIL_onUnsolicitedResponse ( RIL_UNSOL_QOS_STATE_CHANGED_IND,
+            p_buffer2, buffer_size2);
+}
+
+static void  requestResumeQos(void*  data, size_t  datalen, RIL_Token  t)
+{
+    const char* in_qosId = ((const char **)data)[0];
+    const int RESPONSE1_PARAM_NUM = 1;
+    const char* p_buffer1[RESPONSE1_PARAM_NUM];
+    int buffer_size1 = RESPONSE1_PARAM_NUM*sizeof(char*);
+    const char* out_code = "0";
+    p_buffer1[0] = out_code;
+
+    ALOGE("requestResumeQos:RIL_onRequestComplete");
+    RIL_onRequestComplete(t, RIL_E_SUCCESS, p_buffer1, buffer_size1);
+
+    const int RESPONSE2_PARAM_NUM = 2;
+    const char* p_buffer2[RESPONSE2_PARAM_NUM];
+    int buffer_size2 = RESPONSE2_PARAM_NUM*sizeof(char*);
+
+    p_buffer2[0] = in_qosId;
+    p_buffer2[1] = "0"; // Activated
+    ALOGE("requestResumeQos:RIL_onUnsolicitedResponse");
+    RIL_onUnsolicitedResponse ( RIL_UNSOL_QOS_STATE_CHANGED_IND,
+            p_buffer2, buffer_size2);
+}
+
+static void  requestGetQosStatus(void*  data, size_t  datalen, RIL_Token  t)
+{
+
+    const char* in_qosId = ((const char **)data)[0];
+    const int RESPONSE_PARAM_NUM = 3;
+    char* p_buffer[RESPONSE_PARAM_NUM];
+    int buffer_size = RESPONSE_PARAM_NUM*sizeof(char*);
+    char* out_code = "0";
+    char* out_status = "1";
+    char* out_qosSpec = "RIL_QOS_SPEC_INDEX=0,RIL_QOS_FLOW_DIRECTION=0,RIL_QOS_FLOW_DATA_RATE_MIN=64000,RIL_QOS_FLOW_DATA_RATE_MAX=128000,RIL_QOS_FLOW_LATENCY=50,RIL_QOS_FILTER_DIRECTION=0,RIL_QOS_FILTER_IPV4_DESTINATION_ADDR=10.2.5.111,RIL_QOS_FILTER_UDP_DESTINATION_PORT_START=4040,RIL_QOS_FILTER_UDP_DESTINATION_PORT_RANGE=20";
+
+    p_buffer[0] = out_code;
+    p_buffer[1] = out_status;
+    p_buffer[2] = out_qosSpec;
+
+
+    ALOGE("requestGetQosStatus:RIL_onRequestComplete");
+    RIL_onRequestComplete(t, RIL_E_SUCCESS, p_buffer, buffer_size);
 }
 
 /*** Callback methods from the RIL library to us ***/
@@ -2320,7 +2424,8 @@ onRequest (int request, void *data, size_t datalen, RIL_Token t)
             requestEnterSimPin(data, datalen, t);
             break;
 
-        case RIL_REQUEST_IMS_REGISTRATION_STATE: {
+       case RIL_REQUEST_IMS_REGISTRATION_STATE:
+        {
             int reply[2];
             //0==unregistered, 1==registered
             reply[0] = s_ims_registered;
@@ -2358,14 +2463,31 @@ onRequest (int request, void *data, size_t datalen, RIL_Token t)
             requestGetPreferredNetworkType(request, data, datalen, t);
             break;
 
-        case RIL_REQUEST_GET_CELL_INFO_LIST:
-            requestGetCellInfoList(data, datalen, t);
+        case RIL_REQUEST_SETUP_QOS:
+            requestSetupQos(data, datalen, t);
             break;
 
-        case RIL_REQUEST_SET_UNSOL_CELL_INFO_LIST_RATE:
-            requestSetCellInfoListRate(data, datalen, t);
+        case RIL_REQUEST_RELEASE_QOS:
+            requestReleaseQos(data, datalen, t);
             break;
 
+        case RIL_REQUEST_MODIFY_QOS:
+            requestModifyQos(data, datalen, t);
+            break;
+
+        case RIL_REQUEST_SUSPEND_QOS:
+            requestSuspendQos(data, datalen, t);
+            break;
+
+        case RIL_REQUEST_RESUME_QOS:
+            requestResumeQos(data, datalen, t);
+            break;
+
+        case RIL_REQUEST_GET_QOS_STATUS:
+            requestGetQosStatus(data, datalen, t);
+            break;
+
+#ifdef RIL_VARIANT_LEGACY
         case RIL_REQUEST_SET_UICC_SUBSCRIPTION:
             setUiccSubscription(request, data, datalen, t);
             break;
@@ -2373,7 +2495,7 @@ onRequest (int request, void *data, size_t datalen, RIL_Token t)
         case RIL_REQUEST_SET_DATA_SUBSCRIPTION:
             setDataSubscription(request, data, datalen, t);
             break;
-
+#endif
         /* CDMA Specific Requests */
         case RIL_REQUEST_BASEBAND_VERSION:
             if (TECH_BIT(sMdmInfo) == MDM_CDMA) {
@@ -2516,9 +2638,6 @@ setRadioState(RIL_RadioState newState)
     /* do these outside of the mutex */
     if (sState != oldState) {
         RIL_onUnsolicitedResponse (RIL_UNSOL_RESPONSE_RADIO_STATE_CHANGED,
-                                    NULL, 0);
-        // Sim state can change as result of radio state change
-        RIL_onUnsolicitedResponse (RIL_UNSOL_RESPONSE_SIM_STATUS_CHANGED,
                                     NULL, 0);
 
         /* FIXME onSimReady() and onRadioPowerOn() cannot be called
@@ -3113,7 +3232,7 @@ static void waitForClose()
 
 static void sendUnsolImsNetworkStateChanged()
 {
-#if 0 // to be used when unsol is changed to return data.
+#if 0  // to be used when unsol is changed to return data.
     int reply[2];
     reply[0] = s_ims_registered;
     reply[1] = s_ims_services;
@@ -3168,6 +3287,111 @@ static void onUnsolicited (const char *s, const char *sms_pdu)
 #ifdef WORKAROUND_FAKE_CGEV
         RIL_requestTimedCallback (onDataCallListChanged, NULL, NULL); //TODO use new function
 #endif /* WORKAROUND_FAKE_CGEV */
+    } else if(strStartsWith(s,"+STK:")) {
+
+        int nSTKCmd = 0;
+        char *response = NULL;
+        char *str;
+        int nEvent = RIL_UNSOL_STK_PROACTIVE_COMMAND;
+        line = strdup(s);
+        err = at_tok_start(&line);
+        if (err < 0) {
+            ALOGE("Error ::: bailing out %d\n ", err);
+        }
+
+        int err = at_tok_nextint(&line, &nSTKCmd);
+        //err = at_tok_nextstr(&line, &str);
+        if (err < 0) {
+            ALOGE("Error :: bailing out %d\n ", err);
+        }
+        ALOGE("STK Command %d \n", nSTKCmd);
+        /*
+         * TBD: To make the case labels more meaningful and more orderly,
+         * instead of plain numbers.
+         * Reference TS for following payloads : 3GPP TS 31.124 v9.2.0
+        */
+        switch (nSTKCmd) {
+            case 0:
+                // SETUP MENU
+                response = strdup("D03B810301258082028182850C546F6F6C6B6974204D656E758F07014974656D20318F07024974656D20328F07034974656D20338F07044974656D2034");
+                break;
+            case 1:
+                // IDLE MODE TEXT 1.1.1
+                response = strdup("D01A8103012800820281828D0F0449646C65204D6F64652054657874");
+                break;
+            case 2:
+                // DISPLAY TEXT 1.4.1
+                response = strdup("D01A8103012180820281028D0F04546F6F6C6B697420546573742031");
+                break;
+            case 3:
+                // DISPLAY TEXT SEQ 1.2
+                response = strdup("D01A8103012180820281028D0F04546F6F6C6B697420546573742031");
+                break;
+            case 4:
+                // DISPLAY TEXT SEQ 1.3
+                response = strdup("D01A8103012181820281028D0F04546F6F6C6B697420546573742032");
+                break;
+            case 5:
+                // SEND DTMF
+                response = strdup("D01C810301140082028183850953656E642044544D46AC02C1F29E020101");
+                nEvent = RIL_UNSOL_STK_EVENT_NOTIFY;
+                break;
+            case 6:
+                // GETINKEY 7.1.1
+                response = strdup("D0158103012280820281828D0A04456E74657220222B22");
+                break;
+            case 7:
+                // DISPLAY TEXT 7.1.1
+                response = strdup("D01C8103012180820281028D110448656C7020696E666F726D6174696F6E");
+                break;
+            case 8:
+                //GETINKEY 7.1.2
+                response = strdup("D0158103012280820281828D0A04456E74657220222B22");
+                break;
+            case 9:
+                //27.22.4.22.2 SET UP IDLE MODE TEXT SEQ 2.4
+                response = strdup("D00F8103012800820281828D009E020101");
+                break;
+            case 10:
+                //Remove Idle screen 1.3
+                response = strdup("D00B8103012800820281828D00");
+                break;
+            case 11:
+                //SET UP IDLE MODE TEXT 2.1.1
+                response = strdup("D0198103012800820281828D0A0449646C6520746578749E020001");
+                break;
+            case 12:
+                //SET UP IDLE MODE TEXT 2.2.1A
+                response = strdup("D0198103012800820281828D0A0449646C6520746578749E020101");
+                break;
+            case 13:
+                // 27.22.4.26.2 LAUNCH BROWSER SEQ 2.3
+                response = strdup("D00B8103011500820281823100");
+                break;
+            case 14:
+                // PROVILE LOCAL INFO: Qualifier is LANG SETTING
+                response = strdup("D009810301260482028182");
+                break;
+            case 15:
+                //LAUNCH BROWSER 1.2.1
+                response = strdup("D01F8103011500820281823112687474703A2F2F7878782E7979792E7A7A7A0500");
+                break;
+            case 100:
+                // SESSION END
+                RIL_onUnsolicitedResponse (RIL_UNSOL_STK_SESSION_END,
+                                       NULL, 0);
+                break;
+            default:
+                ALOGE("Error: Wrong STK CMD option %d\n ", err);
+                break;
+        }
+        if(NULL != response) {
+            RIL_onUnsolicitedResponse (nEvent, //RIL_UNSOL_STK_PROACTIVE_COMMAND,
+                                       response, strlen(response));
+        } else {
+            ALOGE("Error: Something wrong with response string...");
+        }
+        free(line);
     } else if (strStartsWith(s,"+CREG:")
                 || strStartsWith(s,"+CGREG:")
     ) {
@@ -3335,14 +3559,7 @@ mainLoop(void *param)
                      * now another "legacy" way of communicating with the
                      * emulator), we will try to connecto to gsm service via
                      * qemu pipe. */
-                    char qemuPipe[MAX_QEMU_PIPE_NAME_LENGTH] = "qemud:gsm";
-                    if (ril_inst_id != NULL
-                    		&& strlen(ril_inst_id) <= MAX_CLIENT_ID_LENGTH ) {
-                        strncat(qemuPipe, ril_inst_id ,MAX_QEMU_PIPE_NAME_LENGTH);
-                    }
-                    ALOGD("qemu pipe name : %s\n", qemuPipe);
-                    fd = qemu_pipe_open(qemuPipe);
-
+                    fd = qemu_pipe_open("qemud:gsm");
                     if (fd < 0) {
                         /* Qemu-specific control socket */
                         fd = socket_local_client( "qemud",
@@ -3438,8 +3655,7 @@ const RIL_RadioFunctions *RIL_Init(const struct RIL_Env *env, int argc, char **a
             break;
 
             case 'c':
-                ril_inst_id = optarg;
-                ALOGI("ReferRil is using instance %s ", ril_inst_id);
+                //TODO:This will be handled when DSDS two rild emualtor support is mainlined.
             break;
 
             default:
