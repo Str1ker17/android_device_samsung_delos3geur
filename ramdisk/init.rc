@@ -37,7 +37,7 @@ on early-init
 on init
 
     # I will assume Asia/Novosibirsk, but not today.
-    sysclktz -420
+    sysclktz 0
 
     # increase log level
     loglevel 5
@@ -485,10 +485,10 @@ service servicemanager /system/bin/logwrapper /system/bin/servicemanager
     onrestart restart surfaceflinger
     onrestart restart drm
 
-service vold /system/bin/vold
-    class core
-    socket vold stream 0660 root mount
-    ioprio be 2
+#service vold /system/bin/vold
+#    class core
+#    socket vold stream 0660 root mount
+#    ioprio be 2
 
 service netd /system/bin/logwrapper /system/bin/netd
     class main
@@ -583,11 +583,11 @@ service mdnsd /system/bin/logwrapper /system/bin/mdnsd
     oneshot
 
 ##### WE SHOULD PATCH ORIGINAL init.rc WITH THIS #####
-#service vold /system/bin/logwrapper /system/bin/vold
-#    class core
-#    socket vold stream 0660 root mount
-#    ioprio be 2
-#    socket dir_enc_report stream 0660 root mount
+service vold /system/bin/logwrapper /system/bin/vold
+    class core
+    socket vold stream 0660 root mount
+    ioprio be 2
+    socket dir_enc_report stream 0660 root mount
 
 service ril-daemon /system/bin/logwrapper /system/bin/rild
     class main

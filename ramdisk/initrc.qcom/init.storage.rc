@@ -31,7 +31,7 @@ on init
     symlink /mnt/shell/emulated /storage/emulated/legacy
     symlink /mnt/shell/emulated/0 /storage/emulated/0
     # the second line is more clear to understand
-    #symlink /mnt/shell/emulated/0 /storage/sdcard0
+    symlink /mnt/shell/emulated/0 /storage/sdcard0
     
     symlink /mnt/shell/emulated/0 /mnt/sdcard
     
@@ -44,7 +44,7 @@ on init
     symlink /mnt/shell/emulated/0 /sdcard
     
     # for replacibility with my twrp 3.0.2
-    #symlink /storage/extSdCard /external_sd
+    symlink /storage/extSdCard /external_sd
     
     # temp hack
     chmod 0777 /storage/extSdCard
@@ -54,10 +54,6 @@ on init
     mkdir /preload 0771 system system
     mkdir /efs 0771 system radio
 
-# workaround for BOARD_WANTS_EMMC_BOOT := true
-on emmc-fs
-    trigger fs
-    
 on fs
     mount_all /fstab.qcom.base
 
@@ -65,9 +61,9 @@ on fs
     # these partition flashed on the device. Failure to mount any partition in fstab file
     # results in failure to launch late-start class.
 
-    wait /dev/block/mmcblk0p22
-    check_fs /dev/block/mmcblk0p22 ext4
-    mount ext4 /dev/block/mmcblk0p22 /cache nosuid nodev barrier=1
+    #wait /dev/block/mmcblk0p22
+    #check_fs /dev/block/mmcblk0p22 ext4
+    #mount ext4 /dev/block/mmcblk0p22 /cache nosuid nodev barrier=1
 
     wait /dev/block/mmcblk0p12
     check_fs /dev/block/mmcblk0p12 ext4
@@ -77,13 +73,17 @@ on fs
     check_fs /dev/block/mmcblk0p16 ext4
     mount ext4 /dev/block/mmcblk0p16 /efs nosuid nodev barrier=1
     
-    chown system radio /efs
-    chmod 0771 /efs
-    
     mount ext4 /dev/block/mmcblk0p23 /preload nosuid nodev noatime wait ro
     setprop storage.preload.complete 1
     
+    chown system radio /efs
+    chmod 0771 /efs
+    
     setprop ro.crypto.fuse_sdcard true
+    
+# workaround for BOARD_WANTS_EMMC_BOOT := true
+on emmc-fs
+    trigger fs
     
 on boot
 # mount mtd partitions
@@ -110,8 +110,6 @@ on post-fs-data
     chmod 0771 /persist
     
     setprop vold.post_fs_data_done 1
-    # implicit
-    #start sdcard
 
 # always want emmc boot    
 #on property:ro.boot.emmc=true

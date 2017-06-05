@@ -187,7 +187,7 @@ BOARD_FLASH_BLOCK_SIZE := 131072
 # Remember that we can't boot i8552 without /system/bin/rmt_storage
 # this directive sets ro.boot.emmc=true in properties.
 # stock init script checks for this to decide whether to start rmt_storage, but we can avoid check and start anyway, in future.
-BOARD_WANTS_EMMC_BOOT := true
+#BOARD_WANTS_EMMC_BOOT := true
 
 # this seems to be standing for USB Mass Storage virtual device symbolic link. But that's not exactly.
 #TARGET_USE_CUSTOM_LUN_FILE_PATH := /sys/devices/platform/msm_hsusb/gadget/lun0/file
