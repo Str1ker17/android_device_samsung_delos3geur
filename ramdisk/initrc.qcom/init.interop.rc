@@ -17,16 +17,16 @@ on boot
     chown system system /dev/ttyGS2
     chown system system /dev/ttyGS3
 
-# this is supported on msm7627a
-on property:ro.use_data_netmgrd=false
+# this is SUPPORTED on msm7627a
+#on property:ro.use_data_netmgrd=false
     # netmgr not supported on specific target
-    stop netmgrd
+    #stop netmgrd
 
-service atfwd /system/bin/logwrapper /system/bin/ATFWD-daemon
-    class late_start
-    user system
-    group system radio
-    onrestart exec -- /system/bin/log -t RIL-ATFWD -p w "ATFWD daemon restarted"
+#service atfwd /system/bin/logwrapper /system/bin/ATFWD-daemon
+#    class late_start
+#    user system
+#    group system radio
+#    onrestart exec -- /system/bin/log -t RIL-ATFWD -p w "ATFWD daemon restarted"
 
 service bridgemgrd /system/bin/logwrapper /system/bin/bridgemgrd
     class late_start
@@ -41,21 +41,24 @@ service port-bridge /system/bin/logwrapper /system/bin/port-bridge /dev/smd0 /de
     disabled
 
 service qmiproxy /system/bin/logwrapper /system/bin/qmiproxy
-    class main
+    # implicit
+    class late_start
     user radio
     group radio qcom_diag
-    disabled
+    #disabled
 
 # QMUX must be in multiple groups to support external process connections
 service qmuxd /system/bin/logwrapper /system/bin/qmuxd
-    class main
+    # implicit
+    class late_start
     user radio
     group radio audio bluetooth gps qcom_diag
-    disabled
+    #disabled
 
 service netmgrd /system/bin/logwrapper /system/bin/netmgrd
-    class main
-    disabled
+    # implicit
+    class late_start
+    #disabled
     
 # TODO: bluetooth
 #service abtfilt /system/bin/logwrapper /system/bin/abtfilt -d -z -n -v -q -s -w wlan0

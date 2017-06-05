@@ -4,15 +4,10 @@
 
 # we wanna know what's happening
 persist.sys.usb.config=mtp,adb
-# obsolete
-#persist.service.adb.enable=1
-#persist.service.debuggable=1
 # eng mode
 persist.sys.root_access=3
 # debug everything
 debug.db.uid=999999
-
-persist.fuse_sdcard=true
 
 # this is required for graphics
 # I like 220 density as in 4.4 by weritos. So let it be.
@@ -23,16 +18,16 @@ ro.opengles.version=131072
 # rewritten from init .sh scripts
 debug.composition.type=dyn
 
-# attempt to fix /system/bin/sh
 # is this overlayed with default.prop?
-#ro.secure=0
-#ro.debuggable=1
-#ro.adb.secure=0
+persist.fuse_sdcard=true
 persist.service.cdrom.enable=1
 persist.service.cdrom.file=/system/drivers.iso
+# we want to support OTA
 cm.updater.uri=http://cyanogen.ultibot.ru/api
 
+#
 # RIL
+#
 rild.libpath=/system/lib/libril-qc-qmi-1.so
 rild.libargs=-d /dev/smd0
 persist.dsds.enabled=true
@@ -41,6 +36,11 @@ persist.multisim.config=dsds
 ro.multi.rild=true
 # stripped out from init.ril.rc
 ro.telephony.call_ring.multiple=false
+
+persist.data.ds_fmc_app.mode=0
+ro.use_data_netmgrd=true
+# maybe this will help someday
+#persist.data_netmgrd_nint=16
 
 ril.subscription.types=NV,RUIM
 persist.rild.nitz_plmn=
@@ -65,20 +65,21 @@ ro.telephony.default_network=3
 #telephony.lteOnCdmaDevice=0
 #ro.cdma.factory=china
 #ro.cdma.subscribe_on_ruim_ready=true
-#ro.use_data_netmgrd=true
-#persist.data_netmgrd_nint=16
-#persist.data.ds_fmc_app.mode=0
 #persist.radio.apm_sim_not_pwdn=1
 #persist.radio.mode_pref_nv10=1
 # System prop for sending transmit power request to RIL during WiFi hotspot on/off
 #ro.ril.transmitpower=true
 
+#
 # WiFi tweak
-# this is already set in init.rc
+#
+# this is already set in init.wifi.rc
 #wifi.interface=wlan0
-wifi.supplicant_scan_interval=30
+wifi.supplicant_scan_interval=10
 
+#
 # Dalvik
+#
 # first
 dalvik.vm.heapsize=24m
 dalvik.vm.heapstartsize=5m
