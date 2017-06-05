@@ -98,7 +98,7 @@ TARGET_OTA_ASSERT_DEVICE := delos3geur,i8552,gt-i8552,GT-I8552
 # Actually build
 $(call inherit-product, build/target/product/full.mk)
 
-PRODUCT_BUILD_PROP_OVERRIDES += BUILD_ID="cm_delos3geur-eng 4.2.2 JDQ39E \"vivienne_nelson\" 0532deaeb4 test-keys"
+BUILD_VERSION_TAGS := \"vivienne_nelson\"
 PRODUCT_BUILD_PROP_OVERRIDES += BUILD_UTC_DATE=0
 PRODUCT_NAME := full_delos3geur
 PRODUCT_DEVICE := delos3geur

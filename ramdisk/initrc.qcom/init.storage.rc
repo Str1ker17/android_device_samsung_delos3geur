@@ -54,7 +54,8 @@ on init
     mkdir /preload 0771 system system
     mkdir /efs 0771 system radio
 
-on fs
+# BOARD_WANTS_EMMC_BOOT := true
+on emmc-fs
     mount_all /fstab.qcom.base
 
     # Keeping following partitions outside fstab file. As user may not have
@@ -66,11 +67,11 @@ on fs
     #mount ext4 /dev/block/mmcblk0p22 /cache nosuid nodev barrier=1
 
     wait /dev/block/mmcblk0p12
-    check_fs /dev/block/mmcblk0p12 ext4
+    #check_fs /dev/block/mmcblk0p12 ext4
     mount ext4 /dev/block/mmcblk0p12 /persist nosuid nodev barrier=1
 
     wait /dev/block/mmcblk0p16
-    check_fs /dev/block/mmcblk0p16 ext4
+    #check_fs /dev/block/mmcblk0p16 ext4
     mount ext4 /dev/block/mmcblk0p16 /efs nosuid nodev barrier=1
     
     mount ext4 /dev/block/mmcblk0p23 /preload nosuid nodev noatime wait ro
@@ -82,8 +83,11 @@ on fs
     setprop ro.crypto.fuse_sdcard true
     
 # workaround for BOARD_WANTS_EMMC_BOOT := true
-on emmc-fs
-    trigger fs
+#on emmc-fs
+#    write /dev/kmsg "on emmc-fs: trigger fs"
+#    trigger fs
+    # FIXME: if we can't mount /system for 30 seconds then something's very wrong
+#    wait /system/bin/sysinit 30
     
 on boot
 # mount mtd partitions

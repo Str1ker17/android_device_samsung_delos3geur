@@ -36,9 +36,11 @@ ARCH_ARM_HAVE_TLS_REGISTER := true
 TARGET_CORTEX_CACHE_LINE_32 := true
 ARCH_ARM_HAVE_32_BYTE_CACHE_LINES := true
 TARGET_USE_QCOM_BIONIC_OPTIMIZATION := true
+# TODO: try this
+#TARGET_USE_KRAIT_BIONIC_OPTIMIZATION := true
 
-# somewhat optimization? these options are both supported on i8552,
-# but weritos said that these flags are excess. 
+# somewhat optimization?
+# weritos said that these flags are excess, but these options are both supported on i8552.
 ARCH_ARM_HAVE_NEON := true
 ARCH_ARM_HAVE_ARMV7A := true
 
@@ -135,9 +137,9 @@ DEVICE_RESOLUTION := 480x800
 
 ##### TWEAKING POWER #####
 #TARGET_POWERHAL_VARIANT :=
-# for Samsung GT-I8552; TODO: move to BoardConfig
-LOCAL_CFLAGS += -DBOARD_CHARGING_CMDLINE_NAME=\"androidboot.bootchg\"
-LOCAL_CFLAGS += -DBOARD_CHARGING_CMDLINE_VALUE=\"true\"
+# for Samsung GT-I8552; TODO: uncomment on next ccache -Cz
+#LOCAL_CFLAGS += -DBOARD_CHARGING_CMDLINE_NAME=\"androidboot.bootchg\"
+#LOCAL_CFLAGS += -DBOARD_CHARGING_CMDLINE_VALUE=\"true\"
 # TODO: add options for LPM boot: kernel boot properties
 # BOARD_LPM_BOOT_ARGUMENT_NAME
 # BOARD_LPM_BOOT_ARGUMENT_VALUE
