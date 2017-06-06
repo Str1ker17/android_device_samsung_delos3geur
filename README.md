@@ -18,21 +18,21 @@ What's working:
 - Internal storage
 - External storage
 - CPU Hotplug (proprietary)
-- Audio: speakerphone (but need more testing)
+- Audio: speakerphone
 - Audio: headset
 - Audio: microphone
 - MTP/PTP
-- Flashlight (if permissions to /sys/class/camera/rear/rear_flash are not lost)
+- Flashlight
+- Camera: photo (rear + front)
+- Power Profile
+- Sensors (proprietary, with hacked SensorService)
 
 What's under development:
 - Wi-Fi (disconnects Wi-Fi with screen off, throws errors to logcat)
 - Wi-Fi Direct (could not coexist with Wi-Fi)
-- Sensors (proprietary) (need to fix libbinder)
-- Lights HAL (with stock HAL the light is everywhere)
+- Lights HAL (with stock HAL the light is everywhere, with Google's - nowhere)
 - Power HAL
-- Offline charging (LPM) (testing now)
-- Camera (photo works OK, video don't due to libbinder)
-- Power Profile (testing now)
+- Offline charging (LPM)
 - Tethering (Wi-Fi, USB)
 - GPS (now stock libs, behave weird)
 
@@ -40,11 +40,10 @@ What's not working:
 - RIL
 - Bluetooth
 - Hardware codecs
+- Camera: video (OMX codecs error)
 
 Known issues:
-- CPU Governors could not be changed through builtin settings due to MPDecision proprietary service
 - Volume keys may be disabled with screen off (permissions?)
-- Supported lights: */sys/class/leds/lcd-backlight/brightness* */sys/class/sec/sec_touchkey/brightness*
 - libaudcal.so does not copy to obj/lib automatically while building
 - thermald's ONCRPC throws too much lines to logcat
 - look at "TODO" file

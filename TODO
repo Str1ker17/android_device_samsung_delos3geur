@@ -4,40 +4,32 @@ E/LPM     (  133): Could not open '/sys/class/power_supply/battery/current_avg'
 write own /system/etc/gpu_dcvs.conf to suppress warning
 W/gpu_dcvs(  212): <init_config:257>: failed to open config file, using defaults
 
-with cm10.1+Grace5921 init scripts
+with cm10.1+Grace5921 init scripts. is this due to PowerHAL?
 I/mediaserver(  132): fatal error opening "/sys/power/wake_lock"
 I/mediaserver(  132): fatal error opening "/sys/android_power/acquire_partial_wake_lock"
 
-disable leds in lights HAL
+disable leds in lights HAL. Supported lights: */sys/class/leds/lcd-backlight/brightness* */sys/class/sec/sec_touchkey/brightness*
 E/lights  (  480): write_int failed to open /sys/class/leds/red/brightness
 
 do something more useful with codec quirks than current workaround
 E/QCUtilClass(  158): Invalid quirk index
 
-Sensor Service and/or HAL unstable: run 2GIS to see
+Sensor Service and/or HAL unstable; do something more useful than current workaround
+this time, we check for existence of key before calling editValueFor(), but this is a performance impact
 F/SensorService(  548): VALUE& android::KeyedVector<KEY, VALUE>::editValueFor(const KEY&) [with KEY = int, VALUE = android::SensorDevice::Info]: key not found
 F/libc    (  548): Fatal signal 11 (SIGSEGV) at 0xdeadbaad (code=1), thread 789 (Binder_5)
 
-external sd in 4.1 stock:
-u0_a58@android:/ $ su
-root@android:/ # mount
-rootfs / rootfs ro,relatime 0 0
-tmpfs /dev tmpfs rw,nosuid,relatime,mode=755 0 0
-devpts /dev/pts devpts rw,relatime,mode=600 0 0
-proc /proc proc rw,relatime 0 0
-sysfs /sys sysfs rw,relatime 0 0
-none /acct cgroup rw,relatime,cpuacct 0 0
-tmpfs /mnt/asec tmpfs rw,relatime,mode=755,gid=1000 0 0
-tmpfs /mnt/obb tmpfs rw,relatime,mode=755,gid=1000 0 0
-none /dev/cpuctl cgroup rw,relatime,cpu 0 0
-/dev/block/platform/msm_sdcc.3/by-num/p21 /system ext4 ro,relatime,data=ordered 0 0
-/dev/block/platform/msm_sdcc.3/by-num/p24 /data ext4 rw,nosuid,nodev,relatime,discard,journal_checksum,journal_async_commit,noauto_da_alloc,data=ordered 0 0
-/dev/block/platform/msm_sdcc.3/by-num/p22 /cache ext4 rw,nosuid,nodev,relatime,data=ordered 0 0
-/dev/block/platform/msm_sdcc.3/by-num/p12 /persist ext4 rw,nosuid,nodev,relatime 0 0
-/dev/block/platform/msm_sdcc.3/by-num/p16 /efs ext4 rw,nosuid,nodev,relatime 0 0
-/dev/fuse /storage/sdcard0 fuse rw,nosuid,nodev,noexec,relatime,user_id=1023,group_id=1023,default_permissions,allow_other 0 0
-none /sys/kernel/debug debugfs rw,relatime 0 0
-/dev/block/vold/179:33 /storage/extSdCard vfat rw,dirsync,nosuid,nodev,noexec,noatime,nodiratime,uid=1000,gid=1023,fmask=0002,dmask=0002,allow_utime=0020,codepage=cp437,iocharset=iso8859-1,shortname=mixed,utf8,errors=remount-ro 0 0
-/dev/block/vold/179:33 /mnt/secure/asec vfat rw,dirsync,nosuid,nodev,noexec,noatime,nodiratime,uid=1000,gid=1023,fmask=0002,dmask=0002,allow_utime=0020,codepage=cp437,iocharset=iso8859-1,shortname=mixed,utf8,errors=remount-ro 0 0
-tmpfs /storage/extSdCard/.android_secure tmpfs ro,relatime,size=0k,mode=000 0 0
-root@android:/ #
+Video recoding failure:
+W/StagefrightRecorder(  154): Camera source supports metadata mode, create OMXCodec for metadata
+W/StagefrightRecorder(  154): msm7627 family of chipsets supports, only one buffer at a time
+I/SoftMPEG4Encoder(  154): Construct SoftMPEG4Encoder
+I/OMXCodec(  154): [OMX.google.mpeg4.encoder] setVideoInputFormat width=320, height=240
+E/OMXCodec(  154): [OMX.google.mpeg4.encoder] Found supported color format: 21
+F/OMXCodec(  154): frameworks/av/media/libstagefright/OMXCodec.cpp:1401 err != (status_t)OK
+F/libc    (  154): Fatal signal 11 (SIGSEGV) at 0xdeadbaad (code=1), thread 936 (Binder_3)
+
+=== issue search ===
+
+striker@S1-host:~/android/cm10.1$ cgrep "issuing private command"
+./device/samsung/delos3geur/wifi/wpa_supplicant_8_lib/driver_cmd_nl80211.c:284: wpa_printf("MSG_ERROR", "%s: issuing private command %s\n", __func__, cmd);
+

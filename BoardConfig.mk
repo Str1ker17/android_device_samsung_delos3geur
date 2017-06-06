@@ -29,6 +29,7 @@ TARGET_CPU_ABI2 := armeabi
 TARGET_ARCH_VARIANT := armv7-a-neon
 TARGET_CPU_VARIANT := cortex-a5
 
+# TODO: try -march instead of -mtune
 TARGET_GLOBAL_CFLAGS += -mtune=cortex-a5 -mfpu=neon -mfloat-abi=softfp
 TARGET_GLOBAL_CPPFLAGS += -mtune=cortex-a5 -mfpu=neon -mfloat-abi=softfp
 
@@ -37,7 +38,8 @@ TARGET_CORTEX_CACHE_LINE_32 := true
 ARCH_ARM_HAVE_32_BYTE_CACHE_LINES := true
 TARGET_USE_QCOM_BIONIC_OPTIMIZATION := true
 # TODO: try this
-#TARGET_USE_KRAIT_BIONIC_OPTIMIZATION := true
+TARGET_USE_KRAIT_BIONIC_OPTIMIZATION := true
+#TARGET_USE_SPARROW_BIONIC_OPTIMIZATION := true
 
 # somewhat optimization?
 # weritos said that these flags are excess, but these options are both supported on i8552.
@@ -73,6 +75,7 @@ TARGET_SPECIFIC_HEADER_PATH := device/samsung/delos3geur/include
 
 ######### SYSTEM MODULES SECTION BEGIN #########
 
+
 ##### TWEAKING GRAPHICS #####
 # build from hardware/qcom/display-legacy
 TARGET_QCOM_DISPLAY_VARIANT := legacy
@@ -88,17 +91,23 @@ TARGET_PROVIDES_LIBLIGHTS := true
 # EGL config. all graphics built on top of the EGL, so without this system will become unbootable.
 BOARD_EGL_CFG := device/samsung/delos3geur/egl.cfg
 
-USE_OPENGL_RENDERER := true
-TARGET_DOESNT_USE_FENCE_SYNC := true
+# surfaceflinger, libs/gui
 BOARD_ADRENO_DECIDE_TEXTURE_TARGET := true
+# libtilerenderer, libhwui
+USE_OPENGL_RENDERER := true
+# frameworks/native/services/surfaceflinger/DisplayDevice.cpp
 BOARD_EGL_NEEDS_LEGACY_FB := true
-TARGET_DISPLAY_USE_RETIRE_FENCE := true
-BOARD_NEEDS_MEMORYHEAPPMEM := true
-BOARD_USE_MHEAP_SCREENSHOT := true
-BOARD_EGL_WORKAROUND_BUG_10194508 := true
+# frameworks/base/libs/hwui
 HWUI_COMPILE_FOR_PERF := true
-# not found in cm10.1 sources
+# frameworks/native/libs/binder
+BOARD_NEEDS_MEMORYHEAPPMEM := true
+# not found in cm10.1 sources, but may be useful on cm11 and upper
 #COMMON_GLOBAL_CFLAGS += -DNO_TUNNEL_RECORDING
+#TARGET_DOESNT_USE_FENCE_SYNC := true
+#TARGET_DISPLAY_USE_RETIRE_FENCE := true
+#BOARD_USE_MHEAP_SCREENSHOT := true
+#BOARD_EGL_WORKAROUND_BUG_10194508 := true
+
 
 ##### TWEAKING AUDIO #####
 # if true, use audio HAL from device tree, NOT from hardware/qcom/audio*
@@ -115,7 +124,7 @@ TARGET_HAS_QACT := true
 #COMMON_GLOBAL_CFLAGS += -DICS_AUDIO_BLOB
 #COMMON_GLOBAL_CFLAGS += -DMR0_AUDIO_BLOB
 
-# this has no effect on cm10.x
+# this has no effect on cm10.1
 #BOARD_USES_AUDIO_LEGACY := false
 
 ##### TWEAKING MEDIA #####
@@ -138,8 +147,8 @@ DEVICE_RESOLUTION := 480x800
 ##### TWEAKING POWER #####
 #TARGET_POWERHAL_VARIANT :=
 # for Samsung GT-I8552; TODO: uncomment on next ccache -Cz
-#LOCAL_CFLAGS += -DBOARD_CHARGING_CMDLINE_NAME=\"androidboot.bootchg\"
-#LOCAL_CFLAGS += -DBOARD_CHARGING_CMDLINE_VALUE=\"true\"
+#COMMON_GLOBAL_CFLAGS += -DBOARD_CHARGING_CMDLINE_NAME=\"androidboot.bootchg\"
+#COMMON_GLOBAL_CFLAGS += -DBOARD_CHARGING_CMDLINE_VALUE=\"true\"
 # TODO: add options for LPM boot: kernel boot properties
 # BOARD_LPM_BOOT_ARGUMENT_NAME
 # BOARD_LPM_BOOT_ARGUMENT_VALUE
@@ -222,7 +231,7 @@ DISABLE_DEXPREOPT := true
 #BOARD_USE_LEGACY_TOUCHSCREEN := true
 
 ##### Other modules #####
-# Skip camera this time
+# Include camera
 USE_CAMERA_STUB := false
 # Skip FM this time
 BOARD_HAVE_QCOM_FM := false

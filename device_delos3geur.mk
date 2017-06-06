@@ -43,7 +43,10 @@ PRODUCT_COPY_FILES += frameworks/native/data/etc/android.hardware.usb.accessory.
 # proprietary files
 PRODUCT_COPY_FILES += $(call find-copy-subdir-files,*,$(LOCAL_PATH)/system,system)
 
-# Display
+# copy libaudcal manually
+PRODUCT_COPY_FILES += $(LOCAL_PATH)/system/lib/libaudcal.so:obj/lib/libaudcal.so
+
+# Graphics
 # copybit, gralloc, hwcomposer, lights: hardware/qcom/display
 # build HALs ONLY, there's no need to enumerate all shared libs there
 PRODUCT_PACKAGES += gralloc.msm7x27a
