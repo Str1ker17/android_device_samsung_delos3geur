@@ -1,3 +1,7 @@
+on init
+    # volume up/down key
+    chown radio system /sys/devices/platform/gpio-event/wakeup_keys
+
 # msm specific files that need to be created on /data
 on post-fs-data
     # Create directory used by audio subsystem

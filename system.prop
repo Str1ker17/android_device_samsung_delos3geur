@@ -25,6 +25,11 @@ persist.service.cdrom.file=/system/drivers.iso
 # we want to support OTA
 cm.updater.uri=http://cyanogen.ultibot.ru/api
 
+# defaults
+persist.sys.language=ru
+persist.sys.country=RU
+persist.sys.timezone=Asia/Bangkok
+
 #
 # RIL
 #
@@ -40,7 +45,7 @@ ro.telephony.call_ring.multiple=false
 persist.data.ds_fmc_app.mode=0
 ro.use_data_netmgrd=true
 # maybe this will help someday
-#persist.data_netmgrd_nint=16
+persist.data_netmgrd_nint=16
 
 ril.subscription.types=NV,RUIM
 persist.rild.nitz_plmn=

@@ -48,6 +48,9 @@ on property:vold.decrypt=trigger_restart_framework
 on property:sys.radio.shutdown=true
     exec /system/bin/cat /sys/devices/platform/rs300000a7.65536/force_sync
     exec /system/bin/cat /sys/devices/platform/rs300100a7.65536/force_sync
+    
+on property:persist.data.ds_fmc_app.mode=1
+    start ds_fmc_appd
 
 #service cnd /system/bin/logwrapper /system/bin/cnd
 #    class late_start
@@ -66,4 +69,9 @@ service ril-daemon1 /system/bin/logwrapper /system/bin/rild2 -c 1
     user root
     #disabled
     group radio cache inet misc audio sdcard_rw qcom_oncrpc diag
-    
+
+service ds_fmc_appd /system/bin/ds_fmc_appd -p "rmnet0" -D
+    class late_start
+    group radio wifi inet
+    disabled
+    oneshot

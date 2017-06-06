@@ -35,6 +35,7 @@ What's under development:
 - Offline charging (LPM)
 - Tethering (Wi-Fi, USB)
 - GPS (now stock libs, behave weird)
+- Audio: front speaker
 
 What's not working:
 - RIL
@@ -44,7 +45,9 @@ What's not working:
 
 Known issues:
 - Volume keys may be disabled with screen off (permissions?)
-- libaudcal.so does not copy to obj/lib automatically while building
+- Power off causes infinite loop and never shut down
 - thermald's ONCRPC throws too much lines to logcat
+- libstagefright/QCUtilityClass.cpp is hacked due to weird KeyedVector<> behaviour
+- sensorservice/SensorDevice.cpp too
 - look at "TODO" file
 - and don't forget about "adb logcat -C"

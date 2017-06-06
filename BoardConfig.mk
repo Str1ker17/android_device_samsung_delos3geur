@@ -16,6 +16,8 @@ BOARD_KERNEL_CMDLINE := androidboot.hardware=qcom
 #BOARD_FORCE_RAMDISK_ADDRESS := 0x01300000
 BOARD_MKBOOTIMG_ARGS := --ramdisk_offset 0x01300000
 
+#BOARD_KERNEL_BASE := 0x00200000
+
 # Kernel binary and sources
 TARGET_PREBUILT_KERNEL := device/samsung/delos3geur/kernel_mtp
 # Inline kernel building
@@ -57,21 +59,9 @@ COMMON_GLOBAL_CFLAGS += -DQCOM_BSP -DQCOM_HARDWARE
 BOARD_USES_QCOM_HARDWARE := true
 TARGET_USES_QCOM_BSP := true
 
-# TODO: get rid of excess CLI defines
-#clang: warning: argument unused during compilation: '-D QCOM_LEGACY_MMPARSE'
-#clang: warning: argument unused during compilation: '-D QCOM_LEGACY_OMX'
-#clang: warning: argument unused during compilation: '-D RIL_SUPPORTS_SEEK'
-#clang: warning: argument unused during compilation: '-D RIL_VARIANT_LEGACY'
-
-# this is for ALSA sound. exists in:
-# frameworks/av/media/libstagefright/LPAPlayerALSA.cpp
-# hardware/qcom/audio-caf/alsa_sound/AudioSessionOut.cpp
-# if we do not define it there, default value is 256
-# WARNING: in some other cases (cm without patches) default value might not be set in sources, then uncomment
-#COMMON_GLOBAL_CFLAGS += -DLPA_DEFAULT_BUFFER_SIZE=480
-
 # missing, custom and overlay includes are taken from there.
 TARGET_SPECIFIC_HEADER_PATH := device/samsung/delos3geur/include
+
 
 ######### SYSTEM MODULES SECTION BEGIN #########
 
@@ -87,10 +77,14 @@ TARGET_NO_HW_VSYNC := true
 #TARGET_GRALLOC_USES_ASHMEM := true
 # use stock lights.msm7x27a
 TARGET_PROVIDES_LIBLIGHTS := true
+# Samsung has weird framebuffer, so prevent initlogo stage in /init binary
+TARGET_NO_INITLOGO := true
 
 # EGL config. all graphics built on top of the EGL, so without this system will become unbootable.
 BOARD_EGL_CFG := device/samsung/delos3geur/egl.cfg
 
+# this is already set in device_delos3geur.mk and cm.mk
+DEVICE_RESOLUTION := 480x800
 # surfaceflinger, libs/gui
 BOARD_ADRENO_DECIDE_TEXTURE_TARGET := true
 # libtilerenderer, libhwui
@@ -101,6 +95,8 @@ BOARD_EGL_NEEDS_LEGACY_FB := true
 HWUI_COMPILE_FOR_PERF := true
 # frameworks/native/libs/binder
 BOARD_NEEDS_MEMORYHEAPPMEM := true
+# used in build/core/product.mk, dunno what for
+TARGET_BOARD_PLATFORM_GPU := qcom-adreno203
 # not found in cm10.1 sources, but may be useful on cm11 and upper
 #COMMON_GLOBAL_CFLAGS += -DNO_TUNNEL_RECORDING
 #TARGET_DOESNT_USE_FENCE_SYNC := true
@@ -123,26 +119,25 @@ TARGET_HAS_QACT := true
 # TODO: create patch for cm sources
 #COMMON_GLOBAL_CFLAGS += -DICS_AUDIO_BLOB
 #COMMON_GLOBAL_CFLAGS += -DMR0_AUDIO_BLOB
-
 # this has no effect on cm10.1
 #BOARD_USES_AUDIO_LEGACY := false
+# this is for ALSA sound. exists in:
+# frameworks/av/media/libstagefright/LPAPlayerALSA.cpp
+# hardware/qcom/audio-caf/alsa_sound/AudioSessionOut.cpp
+# if we do not define it there, default value is 256
+# WARNING: in some other cases (cm without patches) default value might not be set in sources, then uncomment
+#COMMON_GLOBAL_CFLAGS += -DLPA_DEFAULT_BUFFER_SIZE=480
+
 
 ##### TWEAKING MEDIA #####
 TARGET_QCOM_MEDIA_VARIANT := legacy
-# use libmmparse.so instead of some new crap
-COMMON_GLOBAL_CFLAGS += -DQCOM_LEGACY_MMPARSE
-
+# use libmmparse.so instead of some new crap, and many other conditional compilations.
 COMMON_GLOBAL_CFLAGS += -DQCOM_LEGACY_OMX
+# this has no effect on cm10.1
+#COMMON_GLOBAL_CFLAGS += -DQCOM_LEGACY_MMPARSE
+#BOARD_USES_ADRENO_200 := true
+#BOARD_USE_LEGACY_UI := true
 
-TARGET_BOARD_PLATFORM_GPU := qcom-adreno203
-BOARD_USES_ADRENO_200 := true
-
-BOARD_USE_LEGACY_UI := true
-
-# Samsung has weird framebuffer, so prevent initlogo stage in /init binary
-TARGET_NO_INITLOGO := true
-DEVICE_RESOLUTION := 480x800
-#BOARD_KERNEL_BASE := 0x00200000
 
 ##### TWEAKING POWER #####
 #TARGET_POWERHAL_VARIANT :=
@@ -155,13 +150,16 @@ DEVICE_RESOLUTION := 480x800
 # or sysfs-path
 # BOARD_CHARGING_MODE_BOOTING_LPM
 
-##### TWEAKING RIL ##### thanks to weritos
+
+##### TWEAKING RIL #####
 # if true, use libril from device tree or somewhere else, NOT from hardware/ril
-#BOARD_PROVIDES_LIBRIL := true
-TARGET_PROVIDES_LIBRIL := true
+BOARD_PROVIDES_LIBRIL := true
+# not supported on cm10.1; use overlay + build.prop instead
 #BOARD_RIL_CLASS := ../../../device/samsung/delos3geur/ril/java_ril
-COMMON_GLOBAL_CFLAGS += -DRIL_SUPPORTS_SEEK
-COMMON_GLOBAL_CFLAGS += -DRIL_VARIANT_LEGACY
+# this is not supported in hardware/ril; define in device tree instead.
+#COMMON_GLOBAL_CFLAGS += -DRIL_SUPPORTS_SEEK
+#COMMON_GLOBAL_CFLAGS += -DRIL_VARIANT_LEGACY
+
 
 ##### TWEAKING Wi-Fi ##### thanks to weritos
 BOARD_WLAN_DEVICE := ath6kl
@@ -181,6 +179,7 @@ WIFI_DRIVER_MODULE_PATH := "/system/lib/modules/ath6kl_sdio.ko"
 WIFI_DRIVER_MODULE_ARG := "suspend_mode=3 wow_mode=2 ath6kl_p2p=1 recovery_enable=1"
 WIFI_DRIVER_FW_PATH_PARAM := "/data/misc/wifi/fwpath"
 
+
 ##### TWEAKING GPS ##### thanks to weritos
 QCOM_GPS_PATH := hardware/qcom/gps
 # if true, use gps from device tree or somewhere else, NOT from hardware/qcom/gps
@@ -189,6 +188,7 @@ BOARD_USES_QCOM_LIBRPC := true
 BOARD_USES_QCOM_GPS := true
 BOARD_VENDOR_QCOM_GPS_LOC_API_AMSS_VERSION := 50000
 BOARD_VENDOR_QCOM_GPS_LOC_API_HARDWARE := $(TARGET_BOARD_PLATFORM)
+
 
 ##### TWEAKING EMMC (INTERNAL STORAGE) #####
 # Change max. number of partitions.
@@ -217,10 +217,12 @@ BOARD_WANTS_EMMC_BOOT := true
 # Use this flag if the board has a ext4 partition larger than 2gb
 BOARD_HAS_LARGE_FILESYSTEM := true
 
-##### BLUETOOTH #####
+
+##### TWEAKING BLUETOOTH #####
 # Don't skip bt this time
 BOARD_HAVE_BLUETOOTH := true
 BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR := device/samsung/delos3geur/bluetooth
+
 
 ##### MISCELLANEOUS #####
 # Wat?
@@ -235,6 +237,7 @@ DISABLE_DEXPREOPT := true
 USE_CAMERA_STUB := false
 # Skip FM this time
 BOARD_HAVE_QCOM_FM := false
+
 
 ##### FINALLY: IMAGES TO BUILD #####
 # What to build?

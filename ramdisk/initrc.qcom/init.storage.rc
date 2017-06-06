@@ -13,10 +13,10 @@ on init
 
     # External storages
     # attempt to fix
-    #mkdir /mnt/media_rw 0755 system media_rw
+    mkdir /mnt/media_rw 0755 system media_rw
     
     # temp hack
-    #mkdir /mnt/media_rw/extSdCard 0700 media_rw media_rw
+    mkdir /mnt/media_rw/extSdCard 0700 media_rw media_rw
     mkdir /storage/extSdCard 0000 system system
     
     #mkdir /mnt/media_rw/usbdisk 0700 media_rw media_rw
@@ -28,8 +28,8 @@ on init
     export EMULATED_STORAGE_TARGET /storage/emulated
     export SECONDARY_STORAGE /storage/extSdCard
 
-    symlink /mnt/shell/emulated /storage/emulated/legacy
-    symlink /mnt/shell/emulated/0 /storage/emulated/0
+    symlink /mnt/shell/emulated/0 /storage/emulated/legacy
+    #symlink /mnt/shell/emulated/0 /storage/emulated/0
     # the second line is more clear to understand
     #symlink /mnt/shell/emulated/0 /storage/sdcard0
     
@@ -107,6 +107,9 @@ on post-fs-data
     chown system system /persist
     chmod 0771 /persist
     
+    # create pseudo link to internal
+    exec -- mount -o bind /mnt/shell/emulated/0 /storage/sdcard0
+    
     setprop vold.post_fs_data_done 1
 
 # always want emmc boot    
@@ -119,11 +122,6 @@ on nonencrypted
 
 on property:vold.decrypt=trigger_restart_framework
     setprop ro.fuse_sdcard ${persist.fuse_sdcard}
-    
-# create pseudo link to internal
-on property:init.svc.sdcard=running
-
-    exec -- mount -o bind /mnt/shell/emulated/0 /storage/sdcard0
     
 # create virtual SD card at /storage/sdcard0, based on the /data/media directory
 # daemon will drop to user/group system/media_rw after initializing

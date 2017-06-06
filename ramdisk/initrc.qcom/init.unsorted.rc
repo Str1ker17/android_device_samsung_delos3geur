@@ -15,9 +15,6 @@ on early-boot
     setprop af.resampler.quality 255
 
 on boot
-    # volume up/down key 
-    chown radio system /sys/devices/platform/gpio-event/wakeup_keys
-    
     #Compcache Init
     chmod 0600 /sys/block/zram0/disksize
     chown system system /sys/block/zram0/disksize
@@ -95,11 +92,6 @@ on post-fs-data
     chown system root /data/.psm.info
     chmod 0660 /data/.psm.info
 
-    setprop vold.post_fs_data_done 1
-    
-on property:persist.data.ds_fmc_app.mode=1
-    start ds_fmc_appd
-
 on property:ro.dumpstate.dmesg=1
     write /proc/sys/kernel/dmesg_restrict 0
     
@@ -108,12 +100,6 @@ on property:service.adb.root=1
     write /sys/class/android_usb/android0/enable 0
     restart adbd
     write /sys/class/android_usb/android0/enable 1
-    
-service ds_fmc_appd /system/bin/ds_fmc_appd -p "rmnet0" -D
-    class late_start
-    group radio wifi inet
-    disabled
-    oneshot
     
 # Str1ker: disable it    
 # AT Distributor for factory test
