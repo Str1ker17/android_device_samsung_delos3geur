@@ -28,6 +28,11 @@ E/OMXCodec(  154): [OMX.google.mpeg4.encoder] Found supported color format: 21
 F/OMXCodec(  154): frameworks/av/media/libstagefright/OMXCodec.cpp:1401 err != (status_t)OK
 F/libc    (  154): Fatal signal 11 (SIGSEGV) at 0xdeadbaad (code=1), thread 936 (Binder_3)
 
+Audio patch for CAD:
+https://github.com/Arubadel/android_device_msm7x27a-common/commit/d548cceb359c47965062a8e78349a33baa27408f
+In-call audio patch:
+https://github.com/Arubadel/android_device_msm7x27a-common/commit/859cb4aaa767915c664fd3f754bbd4e8a4e46896
+
 === issue search ===
 
 striker@S1-host:~/android/cm10.1$ cgrep "issuing private command"

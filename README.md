@@ -1,7 +1,7 @@
 # Samsung Galaxy Win (Grand Quatto) GT-I8552 device tree
 # CyanogenMod 10.1 by Str1ker
 
-Device is based on msm7x27a (msm7627a exactly) chip and msm8625 board.
+Device is based on msm7x27a (msm7627a exactly) platform and msm8625q board.
 If you want to build:
 - disable hardware/ril directory
 - get hardware/qcom/display-legacy from TheWhisp/android_hardware_qcom_display-legacy/tree/jellybean-mr2
@@ -23,7 +23,7 @@ What's working:
 - Audio: microphone
 - MTP/PTP
 - Flashlight
-- Camera: photo (rear + front)
+- Camera: photo (rear + front) (proprietary)
 - Power Profile
 - Sensors (proprietary, with hacked SensorService)
 
@@ -47,7 +47,8 @@ Known issues:
 - Volume keys may be disabled with screen off (permissions?)
 - Power off causes infinite loop and never shut down
 - thermald's ONCRPC throws too much lines to logcat
-- libstagefright/QCUtilityClass.cpp is hacked due to weird KeyedVector<> behaviour
+- libstagefright/QCUtilityClass.cpp is hacked due to weird KeyedVector<> behaviour. Avoid hacks in future
 - sensorservice/SensorDevice.cpp too
+
 - look at "TODO" file
 - and don't forget about "adb logcat -C"

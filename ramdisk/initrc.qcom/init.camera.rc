@@ -1,8 +1,8 @@
 on boot
     # Camera
     chown camera system /sys/class/camera/rear/rear_flash
-    # TODO: temporary workaround, fix permissions
-    chmod 0660 /sys/class/camera/rear/rear_flash
+    # FIXME: temporary workaround, everyone can toggle flash. but this is a security issue.
+    chmod 0666 /sys/class/camera/rear/rear_flash
     start qcamerasvr
 
 #start camera server as daemon

@@ -15,8 +15,7 @@
 ** limitations under the License.
 */
 
-extern char g_log_tag[12];
-#define LOG_TAG ((const char *)g_log_tag)
+#define LOG_TAG "RILC"
 
 #include <stdlib.h>
 #include <unistd.h>
@@ -35,7 +34,7 @@ static pthread_mutex_t listMutex;
 #define MUTEX_INIT() pthread_mutex_init(&listMutex, NULL)
 #define MUTEX_DESTROY() pthread_mutex_destroy(&listMutex)
 
-#include <telephony/ril_log_rev.h>
+#include <telephony/ril_log.h>
 
 #ifndef timeradd
 #define timeradd(tvp, uvp, vvp)						\

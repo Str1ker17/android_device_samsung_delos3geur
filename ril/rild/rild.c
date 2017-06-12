@@ -39,7 +39,7 @@
 #include <private/android_filesystem_config.h>
 #include "hardware/qemu_pipe.h"
 
-#include <telephony/ril_log_rev.h>
+#include <telephony/ril_log.h>
 
 #define LIB_PATH_PROPERTY   "rild.libpath"
 #define LIB_ARGS_PROPERTY   "rild.libargs"
