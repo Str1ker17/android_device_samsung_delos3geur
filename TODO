@@ -38,3 +38,93 @@ https://github.com/Arubadel/android_device_msm7x27a-common/commit/859cb4aaa76791
 striker@S1-host:~/android/cm10.1$ cgrep "issuing private command"
 ./device/samsung/delos3geur/wifi/wpa_supplicant_8_lib/driver_cmd_nl80211.c:284: wpa_printf("MSG_ERROR", "%s: issuing private command %s\n", __func__, cmd);
 
+===
+
+$ adb shell getevent
+add device 1: /dev/input/event6
+  name:     "gpio-keys"
+add device 2: /dev/input/event5
+  name:     "7k_handset"
+add device 3: /dev/input/event4
+  name:     "bmm050"
+add device 4: /dev/input/event3
+  name:     "bma2x2"
+add device 5: /dev/input/event2
+  name:     "proximity_sensor"
+add device 6: /dev/input/event1
+  name:     "7x27a_kp"
+add device 7: /dev/input/event0
+  name:     "sec_touchscreen"
+
+touching volume keys while screen is off:
+$ adb shell getevent
+/dev/input/event1: 0001 0072 00000001
+/dev/input/event1: 0000 0000 00000000
+/dev/input/event1: 0001 0072 00000000
+/dev/input/event1: 0000 0000 00000000
+/dev/input/event1: 0001 0073 00000001
+/dev/input/event1: 0000 0000 00000000
+/dev/input/event1: 0001 0073 00000000
+/dev/input/event1: 0000 0000 00000000
+
+===
+
+Alexander 8:25 pm
+Как раз все что ниже 10 .2 шансы поднять выше
+Почему именно 10.1?
+А не 10.2?
+
+Alexey 8:26 pm
+ну я решил что разница между 4.1 и 4.2 меньше, чем между 4.1 и 4.3
+поэтому у меня как у новичка больше шансов сделать что-то рабочее
+
+Alexander 8:26 pm
+Не
+10.2 больше шансов
+
+Alexey 8:27 pm
+хз.. когда я своё дерево с 10 на 10.1 перенёс, пришлось дней десять возиться чтобы эта хрень хотя бы загрузилась
+и потом ещё фиксить internal+external
+
+Alexander 8:27 pm
+10.1 не имеет поддержку Qualcomm v6 модем (dsds)
+В фреймворке
+Необходимо переписать кучу файлов
+
+Alexey 8:28 pm
+то есть ты хочешь сказать, что рил для двух симок можно сделать только на 4.3?
+
+Alexander 8:31 pm
+Можно и на 4.2 ,но только через портирование , ибо исходников на фрейм и многих приложений системных Анатолий нет.
+Я могу тебе прислать все для 10.2 в том числе и сеть должна работать.
+файлов*
+
+Alexey 8:31 pm
+охуенно
+ну давай на 10.2
+
+Alexander 8:32 pm
+Есть простой способ определения поддержки 2 наших сим
+На прошивках
+Идёшь в исходник settings.apk
+Папка xml
+И если там есть файл multi-sim.xml
+Или что то связанное с sim
+
+Alexey 8:34 pm
+понял
+в исх 10.2 такая штука есть, а в 10.1 нету
+
+Alexander 8:34 pm
+Угу
+
+Alexey 8:34 pm
+так
+а если сделать 10.1 только для первой симки?
+
+Alexander 8:34 pm
+Неа
+Модем на 2
+И демона недо запускать два
+Иначе фиг
+Проходили с см13

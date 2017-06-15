@@ -1,4 +1,0 @@
-@build/core/dex_preopt.mk:
-+DEXPREOPT_BOOT_JARS := core:core-junit:bouncycastle:ext:framework:framework2:android.policy:services:apache-xml
-@system/core/rootdir/init.rc
-+export BOOTCLASSPATH /system/framework/core.jar:/system/framework/core-junit.jar:/system/framework/bouncycastle.jar:/system/framework/ext.jar:/system/framework/framework.jar:/system/framework/framework2.jar:/system/framework/android.policy.jar:/system/framework/services.jar:/system/framework/apache-xml.jar

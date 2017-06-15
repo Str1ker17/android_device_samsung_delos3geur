@@ -1,0 +1,129 @@
+diff --git a/services/sensorservice/Android.mk b/services/sensorservice/Android.mk
+index 0214d7e..604b524 100644
+--- a/services/sensorservice/Android.mk
++++ b/services/sensorservice/Android.mk
+@@ -23,7 +23,7 @@ LOCAL_SRC_FILES += \
+ 	legacy/LegacyRotationVectorSensor.cpp
+ 
+ 
+-LOCAL_CFLAGS:= -DLOG_TAG=\"SensorService\"
++LOCAL_CFLAGS := -DLOG_TAG=\"SensorService\"
+ 
+ LOCAL_SHARED_LIBRARIES := \
+ 	libcutils \
+@@ -41,6 +41,7 @@ ifneq ($(BOARD_SYSFS_LIGHT_SENSOR),)
+     LOCAL_CFLAGS += -DSYSFS_LIGHT_SENSOR=\"$(BOARD_SYSFS_LIGHT_SENSOR)\"
+ endif
+ 
++LOCAL_STRIP_MODULE := keep_symbols
+ LOCAL_MODULE:= libsensorservice
+ 
+ include $(BUILD_SHARED_LIBRARY)
+diff --git a/services/sensorservice/SensorDevice.cpp b/services/sensorservice/SensorDevice.cpp
+index 709febf..86917c5 100644
+--- a/services/sensorservice/SensorDevice.cpp
++++ b/services/sensorservice/SensorDevice.cpp
+@@ -86,8 +86,14 @@ SensorDevice::SensorDevice()
+ #endif
+             mActivationCount.setCapacity(count);
+             Info model;
++
+             for (size_t i=0 ; i<size_t(count) ; i++) {
++                ALOGI("Adding sensor with handle %d", list[i].handle);
++                // this seems to be a strange bug in cm10.1 with KeyedVectors/something internal whatever else
++                //if(list[i].handle < 65536) // "lowmem"
++                //    continue;
+                 mActivationCount.add(list[i].handle, model);
++                ALOGI("Activating sensor with handle %d", list[i].handle);
+                 mSensorDevice->activate(mSensorDevice, list[i].handle, 0);
+             }
+         }
+@@ -166,6 +172,15 @@ status_t SensorDevice::activate(void* ident, int handle, int enabled)
+     }
+ #endif
+ 
++    ssize_t index = mActivationCount.indexOfKey(handle);
++    if(index == 4294967294) {
++        ALOGD("Called with args: %p, %d (index=%u), %d", ident, handle, index, enabled);
++        ALOGE("editValueFor called in %s, line %d", __FILE__, __LINE__);
++        // delete, but how to?
++        
++        // mimic that everything's OK
++        return 0;        
++    }
+     Info& info( mActivationCount.editValueFor(handle) );
+ 
+ 
+@@ -223,6 +238,15 @@ status_t SensorDevice::setDelay(void* ident, int handle, int64_t ns)
+ {
+     if (!mSensorDevice) return NO_INIT;
+     Mutex::Autolock _l(mLock);
++    ssize_t index = mActivationCount.indexOfKey(handle);
++    if(index == 4294967294) {
++        ALOGD("Called with args: %p, %d (index=%u), %ull", ident, handle, index, ns);
++        ALOGE("editValueFor called in %s, line %d", __FILE__, __LINE__);
++        // delete, but how to?
++        
++        // mimic that everything's OK
++        return 0;
++    }
+     Info& info( mActivationCount.editValueFor(handle) );
+     status_t err = info.setDelayForIdent(ident, ns);
+     if (err < 0) return err;
+diff --git a/services/sensorservice/SensorService.cpp b/services/sensorservice/SensorService.cpp
+index cd523ce..edcf036 100644
+--- a/services/sensorservice/SensorService.cpp
++++ b/services/sensorservice/SensorService.cpp
+@@ -354,10 +354,21 @@ void SensorService::recordLastValue(
+         // record the last event of each sensor type in this buffer
+         int32_t curr = buffer[i].sensor;
+         if (curr != prev) {
++            ssize_t index = mLastEventSeen.indexOfKey(prev);
++            if(index == 4294967294) {
++                ALOGD("Called with args: %p (index=%lu), %u", buffer, index, count);
++                ALOGE("editValueFor called in %s, line %d", __FILE__, __LINE__);
++                // delete, but how to?
++                
++                // mimic that everything's OK
++                continue;       
++            }
+             mLastEventSeen.editValueFor(prev) = buffer[i-1];
+             prev = curr;
+         }
+     }
++    // too much lines
++    //ALOGD("editValueFor called in %s, line %d", __FILE__, __LINE__);
+     mLastEventSeen.editValueFor(prev) = buffer[count-1];
+ }
+ 
+@@ -477,6 +488,17 @@ status_t SensorService::enable(const sp<SensorEventConnection>& connection,
+                 // "continuous" sensor.
+                 if (sensor->getSensor().getMinDelay() == 0) {
+                     sensors_event_t scratch;
++                    
++                    ssize_t index = mLastEventSeen.indexOfKey(handle);
++                    if(index == 4294967294) {
++                        ALOGD("Called with args: (index=%lu), %d", index, handle);
++                        ALOGE("editValueFor called in %s, line %d", __FILE__, __LINE__);
++                        // delete, but how to?
++                        
++                        // mimic that everything's OK
++                        return 0;        
++                    }
++                    
+                     sensors_event_t& event(mLastEventSeen.editValueFor(handle));
+                     if (event.version == sizeof(sensors_event_t)) {
+                         connection->sendEvents(&event, 1);
+diff --git a/services/sensorservice/SensorService.h b/services/sensorservice/SensorService.h
+index 18591bf..b6e333c 100644
+--- a/services/sensorservice/SensorService.h
++++ b/services/sensorservice/SensorService.h
+@@ -37,7 +37,7 @@
+ 
+ // ---------------------------------------------------------------------------
+ 
+-#define DEBUG_CONNECTIONS   false
++#define DEBUG_CONNECTIONS   true
+ 
+ struct sensors_poll_device_t;
+ struct sensors_module_t;

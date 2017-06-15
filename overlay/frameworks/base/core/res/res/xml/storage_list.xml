@@ -46,5 +46,5 @@
                  android:primary="false"
                  android:removable="true"
                  android:emulated="false"
-                 android:allowMassStorage="false" />
+                 android:allowMassStorage="true" />
 </StorageList>
