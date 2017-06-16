@@ -9,6 +9,7 @@ LOCAL_PATH := device/samsung/delos3geur
 
 PRODUCT_AAPT_PREF_CONFIG := hdpi
 PRODUCT_AAPT_CONFIG := mdpi hdpi
+WITH_GMS := true
 
 DEVICE_PACKAGE_OVERLAYS += $(LOCAL_PATH)/overlay
 

@@ -88,7 +88,7 @@ static audio_policy_dev_state_t ap_get_device_connection_state(
 static void ap_set_phone_state(struct audio_policy *pol, audio_mode_t state)
 {
     struct qcom_audio_policy *qap = to_qap(pol);
-    qap->apm->setPhoneState(state);
+    qap->apm->setPhoneState((int) state);
 }
 
     /* indicate a change in ringer mode */
@@ -172,14 +172,15 @@ static audio_io_handle_t ap_get_output(struct audio_policy *pol,
                                        uint32_t sampling_rate,
                                        audio_format_t format,
                                        audio_channel_mask_t channelMask,
-                                       audio_output_flags_t flags)
+                                       audio_output_flags_t flags,
+                                       const audio_offload_info_t *info)
 {
     struct qcom_audio_policy *qap = to_qap(pol);
 
     ALOGV("%s: tid %d", __func__, gettid());
     return qap->apm->getOutput((AudioSystem::stream_type)stream,
                                sampling_rate,(int)  format, channelMask,
-                               (AudioSystem::output_flags)flags);
+                               (AudioSystem::output_flags)flags, info);
 }
 
 static int ap_start_output(struct audio_policy *pol, audio_io_handle_t output,
@@ -337,6 +338,13 @@ static bool ap_is_stream_active(const struct audio_policy *pol,
     return qap->apm->isStreamActive((int) stream, in_past_ms);
 }
 
+static bool ap_is_stream_active_remotely(const struct audio_policy *pol, audio_stream_type_t stream,
+                                uint32_t in_past_ms)
+{
+    const struct qcom_audio_policy *qap = to_cqap(pol);
+    return qap->apm->isStreamActiveRemotely((int) stream, in_past_ms);
+}
+
 static bool ap_is_source_active(const struct audio_policy *pol, audio_source_t source)
 {
     const struct qcom_audio_policy *qap = to_cqap(pol);
@@ -347,6 +355,13 @@ static int ap_dump(const struct audio_policy *pol, int fd)
 {
     const struct qcom_audio_policy *qap = to_cqap(pol);
     return qap->apm->dump(fd);
+}
+
+static bool ap_is_offload_supported(const struct audio_policy *pol,
+                                    const audio_offload_info_t *info)
+{
+    const struct qcom_audio_policy *qap = to_cqap(pol);
+    return qap->apm->isOffloadSupported(*info);
 }
 
 static int create_qcom_ap(const struct audio_policy_device *device,
@@ -398,8 +413,10 @@ static int create_qcom_ap(const struct audio_policy_device *device,
     qap->policy.unregister_effect = ap_unregister_effect;
     qap->policy.set_effect_enabled = ap_set_effect_enabled;
     qap->policy.is_stream_active = ap_is_stream_active;
+    qap->policy.is_stream_active_remotely = ap_is_stream_active_remotely;
     qap->policy.is_source_active = ap_is_source_active;
     qap->policy.dump = ap_dump;
+    qap->policy.is_offload_supported = ap_is_offload_supported;
 
     qap->service = service;
     qap->aps_ops = aps_ops;
